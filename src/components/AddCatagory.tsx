@@ -21,10 +21,12 @@ const AddCatagory = () => {
         catagory
       );
       console.log(response);
+      
+      
     } catch (error: any) {
       console.log(error);
     }
-  };
+  };//
   return (
     <>
       <div className="w-[1171px] p-[24px]">
