@@ -2,28 +2,68 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import AddCatagory from "@/components/AddCatagory";
+import { FoodMenu } from "./(food-menu)/food-menu";
 
 type Datas = {
-    username: string
-}
+  username: string;
+};
 
 export default function Home() {
-  const [catagory, setCatagory] = useState([]);
-  const [catagoriesName, setCatagoriesName] = useState<Datas[]>([])
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [input, setInput] = useState("");
+
+  const CollectData = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/users");
+      setUsers(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [catagoriesName, setCatagoriesName] = useState<Datas[]>([]);
+
   const getData = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`http://localhost:4000/users`);
       console.log(response);
       setCatagoriesName(response.data);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      console.log(error);
     }
   };
 
   useEffect(() => {
     getData();
+    CollectData();
   }, []);
+
+  const hanldeUserInput = (e) => {
+    setInput(e.target.value);
+  };
+
+  const handleRemoveUserButton = async () => {
+    try{
+      setLoading(true)
+      const response = await axios.delete("http://localhost:4000/users", {
+        data: {
+          id: input,
+        }
+      })
+      setLoading(false)
+      console.log(response);
+    } catch (err){
+      console.log(err);
+      
+    }
+    
+  };
+
+  if (loading) return <div>loading...</div>;
+
   return (
     <>
       <div className="h-screen w-screen bg-[white] text-[black] flex">
@@ -50,10 +90,23 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <AddCatagory />
-        {catagoriesName?.map((name, index) => (
+        <FoodMenu />
+        {/* {catagoriesName?.map((name, index) => (
           <h1 key={index}>{name.username}</h1>
-        ))}
+        ))} */}
+        <div>
+          {users.map((user, index) => (
+            <div key={index}>{user._id}</div>
+          ))}
+          <div className="flex h-[200px] bg-[gray] w-[400px] items-center gap-[8px]">
+            <input
+              placeholder="Please enter remove id"
+              value={input}
+              onChange={hanldeUserInput}
+            />
+            <button onClick={handleRemoveUserButton}>Delete id</button>
+          </div>
+        </div>
       </div>
     </>
   );
