@@ -6,12 +6,20 @@ import { FoodMenu } from "./(food-menu)/food-menu";
 
 type Datas = {
   username: string;
+  e: string;
+  _id: string;
+};
+type Value = {
+  _id: string;
+  target: {
+    value: string;
+  };
 };
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
 
   const CollectData = async () => {
     try {
@@ -41,25 +49,24 @@ export default function Home() {
     CollectData();
   }, []);
 
-  const hanldeUserInput = (e) => {
+  const hanldeUserInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
   const handleRemoveUserButton = async () => {
-    try{
-      setLoading(true)
+    try {
+      setLoading(true);
       const response = await axios.delete("http://localhost:4000/users", {
         data: {
           id: input,
-        }
-      })
-      setLoading(false)
+        },
+      });
+      setLoading(false);
+      setInput("");
       console.log(response);
-    } catch (err){
+    } catch (err) {
       console.log(err);
-      
     }
-    
   };
 
   if (loading) return <div>loading...</div>;
@@ -91,18 +98,15 @@ export default function Home() {
           </div>
         </div>
         <FoodMenu />
-        {/* {catagoriesName?.map((name, index) => (
-          <h1 key={index}>{name.username}</h1>
-        ))} */}
         <div>
-          {users.map((user, index) => (
+          {users.map((user: Value, index: number) => (
             <div key={index}>{user._id}</div>
           ))}
           <div className="flex h-[200px] bg-[gray] w-[400px] items-center gap-[8px]">
             <input
               placeholder="Please enter remove id"
               value={input}
-              onChange={hanldeUserInput}
+              onChange={(e) => hanldeUserInput(e)}
             />
             <button onClick={handleRemoveUserButton}>Delete id</button>
           </div>
