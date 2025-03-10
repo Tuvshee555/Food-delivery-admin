@@ -4,15 +4,6 @@ export const FoodCatagories = () => {
   return (
     <div>
       FoodCatagories
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
-      <Catagory />
     </div>
   );
 };
