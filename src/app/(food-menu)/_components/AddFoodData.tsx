@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 
-// Use `type` instead of `interface`
 type AddFoodModalProps = {
   categoryName: string;
   closeModal: () => void;
@@ -29,7 +28,6 @@ const AddFoodModal: React.FC<AddFoodModalProps> = ({
 
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Cloudinary upload preset and cloud name
   const CLOUDINARY_UPLOAD_PRESET = "Tushka";
   const CLOUDINARY_CLOUD_NAME = "dbzydfxhc";
 
@@ -37,7 +35,6 @@ const AddFoodModal: React.FC<AddFoodModalProps> = ({
     try {
       setLoading(true);
 
-      // Step 1: Upload the image to Cloudinary if an image is selected
       let imageUrl = "";
       if (newFoodData.image) {
         const formData = new FormData();
