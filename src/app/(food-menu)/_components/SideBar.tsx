@@ -1,7 +1,7 @@
 // components/Sidebar.tsx
 export const Sidebar = () => {
     return (
-      <div className="h-screen w-[205px] p-[36px] flex flex-col border-r border-gray-300">
+      <div className="w-[205px] p-[36px] flex flex-col border-r border-gray-300">
         <div>
           <div className="flex mb-[24px] items-center">
             <img src="/order.png" className="w-[36px] h-[30px]" />

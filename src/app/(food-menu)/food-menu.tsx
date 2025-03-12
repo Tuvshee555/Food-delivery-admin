@@ -38,8 +38,8 @@ export const FoodMenu = () => {
     try {
       setLoading(true);
       await axios.post("http://localhost:4000/category", newCategory);
-      setNewCategory({ categoryName: "" }); 
-      getData(); 
+      setNewCategory({ categoryName: "" });
+      getData();
     } catch (error) {
       console.error("Error adding category:", error);
     } finally {
@@ -48,17 +48,22 @@ export const FoodMenu = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-white text-black flex">
+    <div className="w-screen bg-white text-black flex">
       <Sidebar />
 
-      <div className="p-6">
-        <CategoryList categories={category} loading={loading} />
-        <AddCategoryDialog
-          newCategory={newCategory}
-          setNewCategory={setNewCategory}
-          addCategory={addCategory}
-          loading={loading}
-        />
+      <div className="p-6 bg-[#f4f4f5] strech w-screen">
+        <div className="bg-[white] rounded-[8px] p-[24px]">
+          <div className="text-[20px] font-semibold">Dishes category</div>
+          <div className="flex">
+            <CategoryList categories={category} loading={loading} />
+            <AddCategoryDialog
+              newCategory={newCategory}
+              setNewCategory={setNewCategory}
+              addCategory={addCategory}
+              loading={loading}
+            />
+          </div>
+        </div>
         <CategoriesFoods category={category} />
       </div>
     </div>
