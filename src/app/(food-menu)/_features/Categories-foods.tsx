@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FoodCategory } from "../_components/foodCategory";
+import { FoodCategory } from "../_components/FoodCategory";
 
 
 type CategoryType = {
