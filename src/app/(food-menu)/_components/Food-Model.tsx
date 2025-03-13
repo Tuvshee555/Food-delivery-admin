@@ -1,8 +1,8 @@
 import { useState, ChangeEvent } from "react";
 import axios from "axios";
 
-type AddFoodModalProps = {
-  categoryName: string;
+type FoodModelProps = {
+  category: { _id: string; categoryName: string };
   closeModal: () => void;
   refreshFood: () => void;
 };
@@ -12,10 +12,11 @@ type FoodData = {
   price: string;
   ingredients: string;
   image: File | null;
+  category: string;
 };
 
-export const AddFoodModal: React.FC<AddFoodModalProps> = ({
-  categoryName,
+export const FoodModel: React.FC<FoodModelProps> = ({
+  category,
   closeModal,
   refreshFood,
 }) => {
@@ -24,10 +25,13 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({
     price: "",
     ingredients: "",
     image: null,
+    category: category._id,
   });
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
     setFoodData((prev) => ({
@@ -59,14 +63,22 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({
       setLoading(true);
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
 
-      await axios.post("http://localhost:4000/food", {
+      const res = await axios.post("http://localhost:4000/food", {
         foodName: foodData.foodName,
         price: foodData.price,
         ingredients: foodData.ingredients,
         image: imageUrl,
+        category: foodData.category,
       });
+      console.log(res);
 
-      setFoodData({ foodName: "", price: "", ingredients: "", image: null });
+      setFoodData({
+        foodName: "",
+        price: "",
+        ingredients: "",
+        image: null,
+        category: "",
+      });
       refreshFood();
       closeModal();
     } catch (error) {
@@ -80,8 +92,13 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg w-[480px] shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold">Add new Dish to {categoryName}</h2>
-          <button onClick={closeModal} className="text-gray-600 hover:text-black text-xl">
+          <h2 className="text-lg font-bold">
+            Add new Dish to {category.categoryName}
+          </h2>
+          <button
+            onClick={closeModal}
+            className="text-gray-600 hover:text-black text-xl"
+          >
             ✕
           </button>
         </div>
@@ -133,7 +150,9 @@ export const AddFoodModal: React.FC<AddFoodModalProps> = ({
                 onChange={handleChange}
               />
               <label htmlFor="fileUpload" className="cursor-pointer">
-                <span className="text-center">Choose a file or drag & drop it here</span>
+                <span className="text-center">
+                  Choose a file or drag & drop it here
+                </span>
               </label>
             </div>
           </div>

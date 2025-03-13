@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { AddFoodModal } from "./AddFoodModal";
+import { FoodModel } from "./Food-Model";
 
 interface AddFoodButtonProps {
-  categoryName: string;
+  category: { _id: string; categoryName: string };
   refreshFood: () => void;
 }
 
 export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
-  categoryName,
+  category,
   refreshFood,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
@@ -22,13 +22,13 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
           +
         </div>
         <p className="mt-2 text-center text-gray-600 text-sm">
-          Add new Dish to {categoryName}
+          Add new Dish to {category.categoryName}
         </p>
       </div>
 
       {open && (
-        <AddFoodModal
-          categoryName={categoryName}
+        <FoodModel
+          category={category}
           closeModal={() => setOpen(false)}
           refreshFood={refreshFood}
         />

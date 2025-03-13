@@ -1,5 +1,5 @@
-import { AddFoodButton } from "./AddFoodButton";
-import { FoodCard } from "./FoodCard";
+import { AddFoodButton } from "./Add-Food-Button";
+import { FoodCard } from "./Food-Card";
 
 type FoodCategoryProps = {
   category: { _id: string; categoryName: string };
@@ -7,12 +7,17 @@ type FoodCategoryProps = {
   refreshFood: () => void;
 };
 
-export const FoodCategory = ({
+export const FoodCategoryList = ({
   category,
   foodData,
   refreshFood,
 }: FoodCategoryProps) => {
-  const filteredFood = foodData.filter((dish) => dish.categoryId === category._id);
+  const filteredFood = foodData.filter(
+    (dish) => dish.category === category._id
+    
+  );
+  
+  
 
   return (
     <div className="flex flex-col gap-4 bg-white rounded-md p-5">
@@ -22,7 +27,10 @@ export const FoodCategory = ({
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <AddFoodButton categoryName={category.categoryName} refreshFood={refreshFood} />
+        <AddFoodButton
+          category={category}
+          refreshFood={refreshFood}
+        />
         {filteredFood.map((dish) => (
           <FoodCard
             key={dish._id}

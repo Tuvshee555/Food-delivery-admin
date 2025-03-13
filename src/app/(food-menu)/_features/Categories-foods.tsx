@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FoodCategory } from "../_components/FoodCategory";
+import { FoodCategoryList } from "../_components/Food-Category-List";
+
 
 
 type CategoryType = {
@@ -32,7 +33,7 @@ export const CategoriesFoods = ({ category }: CategoriesProps) => {
   return (
     <div className="w-full flex flex-col gap-[24px] mt-[20px]">
       {category.map((e) => (
-        <FoodCategory
+        <FoodCategoryList
           key={e._id}
           category={e}
           foodData={foodData}

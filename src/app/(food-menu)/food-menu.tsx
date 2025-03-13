@@ -1,14 +1,15 @@
 // pages/FoodMenu.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Sidebar } from "./_components/SideBar";
-import { CategoryList } from "./_components/CategoryList";
-import { AddCategoryDialog } from "./_components/AddCategoryDialog";
+import { Sidebar } from "../../components/Side-Bar";
+import { CategoryNameList } from "./_components/Category-Name-List";
+import { AddCategoryDialog } from "./_components/Add-Category-Dialog";
 import { CategoriesFoods } from "./_features/Categories-foods";
 
 type Datas = {
   categoryName: string;
   _id: string;
+  foodCount : number
 };
 
 export const FoodMenu = () => {
@@ -49,13 +50,11 @@ export const FoodMenu = () => {
 
   return (
     <div className="w-screen bg-white text-black flex">
-      <Sidebar />
-
       <div className="p-6 bg-[#f4f4f5] strech w-screen">
         <div className="bg-[white] rounded-[8px] p-[24px]">
           <div className="text-[20px] font-semibold">Dishes category</div>
           <div className="flex">
-            <CategoryList categories={category} loading={loading} />
+            <CategoryNameList category={category} loading={loading} />
             <AddCategoryDialog
               newCategory={newCategory}
               setNewCategory={setNewCategory}
