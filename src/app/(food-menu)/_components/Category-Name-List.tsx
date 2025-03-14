@@ -4,9 +4,6 @@ type CategoryListProps = {
 };
 
 export const CategoryNameList = ({ category, loading }: CategoryListProps) => {
-  
-  console.log(category);
-  
   return (
     <div>
       {loading ? (
@@ -17,12 +14,11 @@ export const CategoryNameList = ({ category, loading }: CategoryListProps) => {
             {category.map((c) => (
               <div
                 key={c._id}
-                className="py-2 px-4 text-sm rounded-[20px] border border-gray-400"
+                className="py-2 px-4 text-sm rounded-[20px] border border-gray-400 flex gap-[8px]"
               >
                 <div> {c.categoryName}</div>
-               
-                <p className="text-gray-500">{c.foodCount}</p>
 
+                <p className="text-gray-500">{c.foodCount}</p>
               </div>
             ))}
           </div>

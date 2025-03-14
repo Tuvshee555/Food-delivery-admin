@@ -1,5 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import axios from "axios";
+import { read } from "fs";
 
 type FoodModelProps = {
   category: { _id: string; categoryName: string };
@@ -15,7 +16,7 @@ type FoodData = {
   category: string;
 };
 
-export const FoodModel: React.FC<FoodModelProps> = ({
+export const AddFoodModel: React.FC<FoodModelProps> = ({
   category,
   closeModal,
   refreshFood,
@@ -27,10 +28,11 @@ export const FoodModel: React.FC<FoodModelProps> = ({
     image: null,
     category: category._id,
   });
+  const [photo, setPhoto] = useState<string | undefined>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
@@ -38,6 +40,16 @@ export const FoodModel: React.FC<FoodModelProps> = ({
       ...prev,
       [name]: name === "image" && files ? files[0] : value,
     }));
+
+    if (files) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhoto(reader?.result as string);
+        setLoading(false);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const uploadImage = async (file: File): Promise<string | undefined> => {
@@ -89,7 +101,7 @@ export const FoodModel: React.FC<FoodModelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 position-absolute z-50">
       <div className="bg-white p-6 rounded-lg w-[480px] shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">
@@ -104,29 +116,31 @@ export const FoodModel: React.FC<FoodModelProps> = ({
         </div>
 
         <div className="grid gap-4">
-          <div>
-            <label className="text-sm font-medium">Food Name</label>
-            <input
-              name="foodName"
-              placeholder="Type food name"
-              className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 focus:outline-none"
-              value={foodData.foodName}
-              onChange={handleChange}
-            />
+          <div className="flex w-full gap-3 justify-between">
+            <div className="gap-2 flex flex-col w-full">
+              <label className="text-sm font-medium">Food Name</label>
+              <input
+                name="foodName"
+                placeholder="Type food name"
+                className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
+                value={foodData.foodName}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="gap-2 flex flex-col w-full">
+              <label className="text-sm font-medium">Food Price</label>
+              <input
+                name="price"
+                placeholder="Enter price..."
+                className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
+                value={foodData.price}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Food Price</label>
-            <input
-              name="price"
-              placeholder="Enter price..."
-              className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 focus:outline-none"
-              value={foodData.price}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
+          <div className="gap-2 flex flex-col">
             <label className="text-sm font-medium">Ingredients</label>
             <textarea
               name="ingredients"
@@ -138,23 +152,30 @@ export const FoodModel: React.FC<FoodModelProps> = ({
             />
           </div>
 
-          <div>
+          <div className="gap-2 flex flex-col">
             <label className="text-sm font-medium">Food Image</label>
-            <div className="border border-dashed p-4 rounded-md flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100">
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                className="hidden"
-                id="fileUpload"
-                onChange={handleChange}
+            {foodData?.image && photo ? (
+              <img
+                className="h-[138px] w-[412px] bg-[red] object-cover"
+                src={photo}
               />
-              <label htmlFor="fileUpload" className="cursor-pointer">
-                <span className="text-center">
-                  Choose a file or drag & drop it here
-                </span>
-              </label>
-            </div>
+            ) : (
+              <div className="border border-dashed rounded-md flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100">
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/*"
+                  className="hidden"
+                  id="fileUpload"
+                  onChange={handleChange}
+                />
+                <label htmlFor="fileUpload" className="cursor-pointer p-[50px]">
+                  <span className="text-center">
+                    Choose a file or drag & drop it here
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 

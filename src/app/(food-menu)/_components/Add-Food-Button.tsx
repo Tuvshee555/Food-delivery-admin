@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FoodModel } from "./Food-Model";
+import { AddFoodModel } from "./Add-Food-Model";
 
 interface AddFoodButtonProps {
   category: { _id: string; categoryName: string };
@@ -15,7 +15,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
   return (
     <>
       <div
-        className="w-[260px] h-[240px] flex flex-col items-center justify-center border border-gray-300 rounded-lg cursor-pointer hover:shadow-md transition"
+        className="w-[240px] h-[241px] rounded-[20px] flex flex-col items-center justify-center border border-red-500 border-dashed cursor-pointer hover:shadow-md transition"
         onClick={() => setOpen(true)}
       >
         <div className="h-[40px] w-[40px] bg-red-500 flex items-center justify-center text-white rounded-full shadow-lg">
@@ -27,7 +27,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
       </div>
 
       {open && (
-        <FoodModel
+        <AddFoodModel
           category={category}
           closeModal={() => setOpen(false)}
           refreshFood={refreshFood}

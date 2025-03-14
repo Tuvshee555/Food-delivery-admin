@@ -12,7 +12,7 @@ import {
 import axios from "axios";
 import { useState } from "react";
 
-const AddCatagory = () => {
+export const AddCatagoryModel = () => {
   const [catagory, setCatagory] = useState({ username: "" });
   const postData = async () => {
     try {
@@ -85,4 +85,4 @@ const AddCatagory = () => {
     </>
   );
 };
-export default AddCatagory;
+

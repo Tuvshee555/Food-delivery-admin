@@ -16,6 +16,11 @@ export const FoodCategoryList = ({
     (dish) => dish.category === category._id
     
   );
+  // console.log("filteredFood", filteredFood);
+  // console.log("foodData",foodData);
+  // console.log("category",category);
+  
+  
   
   
 

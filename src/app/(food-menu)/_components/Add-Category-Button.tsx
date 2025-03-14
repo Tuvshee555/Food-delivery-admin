@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export const AddCategoryDialog = ({
+export const AddCategoryButton = ({
   newCategory,
   setNewCategory,
   addCategory,
@@ -32,7 +32,7 @@ export const AddCategoryDialog = ({
           </div>
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-[white]">
         <DialogHeader>
           <DialogTitle>Add New Category</DialogTitle>
         </DialogHeader>
