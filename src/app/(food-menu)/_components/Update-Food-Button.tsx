@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -8,52 +9,64 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import axios from "axios";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { read } from "fs";
+import { Files } from "lucide-react";
 
-type FoodCardProps = {
-  food: Food;
-};
 type Food = {
   foodName: string;
   price: string;
   image?: string;
   ingredients: string;
+  category: string;
+  refreshFood: () => void
+  foodData: any[]
 };
 
+type FoodCardProps = {
+  food: Food;
+  refreshFood: () => void
+};
 
-export const UpdateFoodButton: React.FC<FoodCardProps> = ({food}) => {
-  const [updatedFood, setUpdatedFood] = useState({
-    foodName: "",
-    price: "",
-    ingredients: "",
-    image: null,
-  })
-  
-  const [Loading, setLoading] = useState(false)
-  const handleChange = (e: ChangeEvent) => {
-    const value = e.target as HTMLInputElement
+export const UpdateFoodButton: React.FC<FoodCardProps> = ({ food, refreshFood }) => {
+  const [updatedFood, setUpdatedFood] = useState<Food>({ ...food });
+  const [photo, setPhoto] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>) => {
+    const { name, value, files } = e.target as HTMLInputElement
     setUpdatedFood((prev) => ({
-      ...prev, 
-      value
-      
-    }) )
-  }
-  const updataData = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.put("http://localhost:4000/food", 
-        {
-          foodName: updatedFood.foodName
-        }
-      )
-
-    } catch (error) {
-      console.log(error)
-      
-    } finally {
-      setLoading(false)
+      ...prev,
+      [name]: name === "image" && files ? files[0]: value
+    }));
+    if (files){
+      const file = files[0];
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPhoto(reader?.result as string)
+        setLoading(false)
+      }
+      reader.readAsDataURL(file)
     }
-  }
+  };
+
+  const updateData = async () => {
+    try {
+      setLoading(true);
+      await axios.put("http://localhost:4000/food", updatedFood);
+      refreshFood
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+
+    }
+  };
+  useEffect(() => {
+    updateData()
+
+  }, [])
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -69,38 +82,44 @@ export const UpdateFoodButton: React.FC<FoodCardProps> = ({food}) => {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="name" className="text-right">
-              Dish Name
-            </label>
-            <input id="name" className="col-span-3" value={food.foodName} onChange={handleChange}/>
+            <label htmlFor="foodName" className="text-right">Dish Name</label>
+            <Input id="foodName" name="foodName" className="col-span-3" value={updatedFood.foodName} onChange={handleChange} />
           </div>
           <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="name" className="text-right">
-              Dish category
-            </label>
-            {/* <input id="name" className="col-span-3" value={food.price} onChange={handleChange}> ???? */}
+            <label htmlFor="category" className="text-right">Dish Category</label>
+            <Input id="category" name="category" className="col-span-3" value={updatedFood.category} onChange={handleChange} />
           </div>
           <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="name" className="text-right">
-              Ingredients
-            </label>
-            <textarea id="name" className="col-span-3" value={food.ingredients} onChange={handleChange}/>
+            <label htmlFor="ingredients" className="text-right">Ingredients</label>
+            <textarea id="ingredients" name="ingredients" className="col-span-3" value={updatedFood.ingredients} onChange={handleChange} />
           </div>
           <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="username" className="text-right">
-              Price
-            </label>
-            <input id="username" className="col-span-3" value={food.price} onChange={handleChange}/>
+            <label htmlFor="price" className="text-right">Price</label>
+            <Input id="price" name="price" className="col-span-3" value={updatedFood.price} onChange={handleChange} />
           </div>
           <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="username" className="text-right">
-              Image
-            </label>
-            <input id="username" className="col-span-3" value={food.image} onChange={handleChange}/>
+            <label htmlFor="image" className="text-right">Image</label>
+            {updatedFood?.image && photo ? (
+              <img className="h-[138px] w-[412px] bg-[red] object-cover" src={photo} /> 
+            ) : <div>
+              <Input type="file" name="name" accept="image/*" className="hidden" id="fileUpload" onChange={handleChange} />
+              <label htmlFor="fileUpload" className="cursor-pointer p-[50px]"> 
+                <span className="text-center">
+                  Choose a file or drag & drop it here
+
+
+                </span>
+
+
+              </label>
+              
+              </div>}
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button type="button" onClick={updateData} disabled={loading}>
+            {loading ? "Saving..." : "Save changes"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

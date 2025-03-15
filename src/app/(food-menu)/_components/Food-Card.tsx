@@ -1,4 +1,3 @@
-import { Edit2 } from "lucide-react";
 import { UpdateFoodButton } from "./Update-Food-Button";
 
 type Food = {
@@ -6,6 +5,9 @@ type Food = {
   price: string;
   image?: string;
   ingredients: string;
+  category: string
+  refreshFood: () => void
+  foodData: any[]
 };
 
 type FoodCardProps = {
@@ -14,7 +16,7 @@ type FoodCardProps = {
   refreshFood: () => void;
 };
 
-export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
+export const FoodCard: React.FC<FoodCardProps> = ({ food, refreshFood }) => {
   return (
     <div className="bg-white shadow-md p-4 gap-5 border-[1px] rounded-2xl flex flex-col items-center w-[271px] max-w-[241px]">
       <div className="relative">
@@ -25,7 +27,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
         />
         <div className="absolute bottom-2 z-10 right-2 h-11 w-11 items-center flex justify-center rounded-full bg-[white]">
           {/* <Edit2 size={20} stroke="#EF4444" className="items-center" /> */}
-          <UpdateFoodButton food={food} />
+          <UpdateFoodButton food={food} refreshFood={refreshFood}/>
         </div>
       </div>
 
@@ -41,3 +43,4 @@ export const FoodCard: React.FC<FoodCardProps> = ({ food }) => {
     </div>
   );
 };
+
