@@ -1,6 +1,7 @@
 import { AddFoodButton } from "./Add-Food-Button";
 import { FoodCard } from "./Food-Card";
 
+
 type FoodCategoryProps = {
   category: { _id: string; categoryName: string };
   foodData: any[];
@@ -16,13 +17,6 @@ export const FoodCategoryList = ({
     (dish) => dish.category === category._id
     
   );
-  // console.log("filteredFood", filteredFood);
-  // console.log("foodData",foodData);
-  // console.log("category",category);
-  
-  
-  
-  
 
   return (
     <div className="flex flex-col gap-4 bg-white rounded-md p-5">
@@ -40,8 +34,8 @@ export const FoodCategoryList = ({
           <FoodCard
             key={dish._id}
             food={dish}
-            categoryName={category.categoryName}
             refreshFood={refreshFood}
+            category={category}
           />
         ))}
       </div>

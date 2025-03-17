@@ -74,6 +74,8 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     try {
       setLoading(true);
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
+      console.log(imageUrl);
+      
 
       const res = await axios.post("http://localhost:4000/food", {
         foodName: foodData.foodName,
