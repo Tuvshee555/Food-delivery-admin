@@ -3,12 +3,7 @@ import axios from "axios";
 import { AddCategoryButton } from "./_components/Add-Category-Button";
 import { CategoriesFoods } from "./_features/Categories-foods";
 import { CategoryNameList } from "./_components/Category-Name-List";
-
-type Datas = {
-  categoryName: string;
-  _id: string;
-  foodCount : number
-};
+import { Datas } from "@/type/type";
 
 export const FoodMenu = () => {
   const [category, setCategory] = useState<Datas[]>([]);

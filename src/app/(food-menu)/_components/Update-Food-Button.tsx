@@ -12,12 +12,12 @@ import axios from "axios";
 import { ChangeEvent, useState } from "react";
 import { FoodCardPropsType, FoodType } from "../../../type/type";
 import { Trash } from "lucide-react";
-import { SelectCategory } from "./SelectCategory";
+import { SelectCategory } from "./Select-Category";
 
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
-  category
+  category,
 }) => {
   const [updatedFood, setUpdatedFood] = useState<FoodType>({ ...food });
   const [photo, setPhoto] = useState<string | undefined>(
@@ -26,25 +26,28 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { name: string; value: string }
   ) => {
-    const { name, value, files } = e.target as HTMLInputElement;
-    if (name === "image" && files) {
-      const file = files[0];
-      setUpdatedFood((prev) => ({ ...prev, image: file }));
-
-      const reader = new FileReader();
-      reader.onload = () => setPhoto(reader.result as string);
-      reader.readAsDataURL(file);
-    } else {
+    if ("target" in e) {
+      const target = e.target as HTMLInputElement;
+      const { name, value, files } = target;
+  
+      if (name === "image" && files?.length) {
+        const file = files[0];
+        setUpdatedFood((prev) => ({ ...prev, image: file }));
+  
+        const reader = new FileReader();
+        reader.onload = () => setPhoto(reader.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+  
       setUpdatedFood((prev) => ({ ...prev, [name]: value }));
+    } else {
+      setUpdatedFood((prev) => ({ ...prev, [e.name]: e.value }));
     }
   };
-
-  // const SelectCategory = async => {
-  //   try
-
-  // }
+  
 
   const uploadImage = async (file: File) => {
     try {
@@ -75,6 +78,8 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
 
       console.log(imageUrl);
 
+      console.log(updatedFood);
+
       const response = await axios.put("http://localhost:4000/food", {
         _id: food._id,
         foodName: updatedFood.foodName,
@@ -104,98 +109,92 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>
-          <div className="h-[30px] w-[30px] bg-red-500 flex items-center justify-center text-white rounded-full">
-            +
-          </div>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-[white]">
-        <DialogHeader>
-          <DialogTitle>Dishes info</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="foodName" className="text-right">
-              Dish Name
-            </label>
-            <Input
-              id="foodName"
-              name="foodName"
-              className="col-span-3"
-              value={updatedFood.foodName}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="category" className="text-right">
-              <SelectCategory category={category}/>
-            </label>
-            <Input
-              id="category"
-              name="category"
-              className="col-span-3"
-              value={updatedFood.category}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="ingredients" className="text-right">
-              Ingredients
-            </label>
-            <textarea
-              id="ingredients"
-              name="ingredients"
-              className="col-span-3"
-              value={updatedFood.ingredients}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
-            <label htmlFor="price" className="text-right">
-              Price
-            </label>
-            <Input
-              id="price"
-              name="price"
-              className="col-span-3"
-              value={updatedFood.price}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="border rounded-md p-2 flex flex-col items-center">
-            <label htmlFor="image" className="text-right">
-              Image
-            </label>
-            {photo ? (
-              <img
-                className="h-[138px] w-[412px] bg-[red] object-cover"
-                alt="Preview"
-                src={photo}
+    <>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button>
+            <div className="h-[30px] w-[30px] bg-red-500 flex items-center justify-center text-white rounded-full">
+              +
+            </div>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px] bg-[white]">
+          <DialogHeader>
+            <DialogTitle>Dishes info</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
+              <label htmlFor="foodName" className="text-right">
+                Dish Name
+              </label>
+              <Input
+                id="foodName"
+                name="foodName"
+                className="col-span-3"
+                value={updatedFood.foodName}
+                onChange={handleChange}
               />
-            ) : (
-              <span className="text-gray-500">No image selected</span>
-            )}
-            <Input
-              type="file"
-              name="image"
-              accept="image/*"
-              id="fileUpload"
-              onChange={handleChange}
+            </div>
+            <SelectCategory
+              updatedFood={updatedFood}
+              handleChange={handleChange}
             />
+            <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
+              <label htmlFor="ingredients" className="text-right">
+                Ingredients
+              </label>
+              <textarea
+                id="ingredients"
+                name="ingredients"
+                className="col-span-3"
+                value={updatedFood.ingredients}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4 border-[1px] rounded-md">
+              <label htmlFor="price" className="text-right">
+                Price
+              </label>
+              <Input
+                id="price"
+                name="price"
+                className="col-span-3"
+                value={updatedFood.price}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="border rounded-md p-2 flex flex-col items-center">
+              <label htmlFor="image" className="text-right">
+                Image
+              </label>
+              {photo ? (
+                <img
+                  className="h-[138px] w-[412px] bg-[red] object-cover"
+                  alt="Preview"
+                  src={photo}
+                />
+              ) : (
+                <span className="text-gray-500">No image selected</span>
+              )}
+              <Input
+                type="file"
+                name="image"
+                accept="image/*"
+                id="fileUpload"
+                onChange={handleChange}
+              />
+            </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={updateData} disabled={loading}>
-            {loading ? "Saving..." : "Save changes"}
-          </Button>
-          <Button type="button" onClick={DeleteFood}>
-            <Trash />
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button type="button" onClick={updateData} disabled={loading}>
+              {loading ? "Saving..." : "Save changes"}
+            </Button>
+            <Button type="button" onClick={DeleteFood}>
+              <Trash />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

@@ -1,20 +1,8 @@
 import { useState, ChangeEvent } from "react";
+import { uploadImage } from "@/utils/UploadImage";
 import axios from "axios";
-import { read } from "fs";
+import { FoodData, FoodModelProps } from "@/type/type";
 
-type FoodModelProps = {
-  category: { _id: string; categoryName: string };
-  closeModal: () => void;
-  refreshFood: () => void;
-};
-
-type FoodData = {
-  foodName: string;
-  price: string;
-  ingredients: string;
-  image: File | null;
-  category: string;
-};
 
 export const AddFoodModel: React.FC<FoodModelProps> = ({
   category,
@@ -52,30 +40,11 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     }
   };
 
-  const uploadImage = async (file: File): Promise<string | undefined> => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "Tushka");
-
-      const { data } = await axios.post(
-        `https://api.cloudinary.com/v1_1/dbzydfkhc/image/upload`,
-        formData
-      );
-
-      return data.secure_url;
-    } catch (error) {
-      console.error("Image upload error: ", error);
-      return undefined;
-    }
-  };
-
   const addFood = async () => {
     try {
       setLoading(true);
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
       console.log(imageUrl);
-      
 
       const res = await axios.post("http://localhost:4000/food", {
         foodName: foodData.foodName,

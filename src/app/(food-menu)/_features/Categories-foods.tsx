@@ -1,17 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FoodCategoryList } from "../_components/Food-Category-List";
-
-
-
-type CategoryType = {
-  _id: string;
-  categoryName: string;
-};
-
-type CategoriesProps = {
-  category: CategoryType[];
-};
+import { CategoriesProps } from "@/type/type";
 
 export const CategoriesFoods = ({ category }: CategoriesProps) => {
   const [foodData, setFoodData] = useState([]);
