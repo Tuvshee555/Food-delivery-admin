@@ -1,5 +1,5 @@
-import { AddFoodButton } from "./Add-Food-Button";
-import { FoodCard } from "./Food-Card";
+import { AddFoodButton } from "./AddFoodButton";
+import { FoodCard } from "./FoodCard";
 
 
 type FoodCategoryProps = {

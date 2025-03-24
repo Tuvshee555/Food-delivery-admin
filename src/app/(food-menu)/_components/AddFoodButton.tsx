@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AddFoodModel } from "./Add-Food-Model";
+import { AddFoodModel } from "./AddFoodModel";
 
 interface AddFoodButtonProps {
   category: { _id: string; categoryName: string };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FoodCategoryList } from "../_components/Food-Category-List";
+import { FoodCategoryList } from "../_components/FoodCategoryList";
 import { CategoriesProps } from "@/type/type";
 
 export const CategoriesFoods = ({ category }: CategoriesProps) => {

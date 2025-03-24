@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Sidebar } from "../components/Side-Bar";
-import { FoodMenu } from "./(food-menu)/food-menu";
+import { FoodMenu } from "./(food-menu)/FoodMenu";
 import { Orders } from "./(orders)/Orders";
 import { Settings } from "./(settings)/settings";
 

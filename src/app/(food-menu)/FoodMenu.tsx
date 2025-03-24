@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { AddCategoryButton } from "./_components/Add-Category-Button";
-import { CategoriesFoods } from "./_features/Categories-foods";
-import { CategoryNameList } from "./_components/Category-Name-List";
+import { AddCategoryButton } from "./_components/AddCategoryButton";
+import { CategoriesFoods } from "./_features/Categoriesfoods";
+import { CategoryNameList } from "./_components/CategoryNameList";
 import { Datas } from "@/type/type";
 
 export const FoodMenu = () => {

@@ -12,7 +12,8 @@ import axios from "axios";
 import { ChangeEvent, useState } from "react";
 import { FoodCardPropsType, FoodType } from "../../../type/type";
 import { Trash } from "lucide-react";
-import { SelectCategory } from "./Select-Category";
+import { SelectCategory } from "./SelectCategory";
+import { Pencil } from "lucide-react";
 
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
@@ -26,28 +27,29 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { name: string; value: string }
+    e:
+      | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      | { name: string; value: string }
   ) => {
     if ("target" in e) {
       const target = e.target as HTMLInputElement;
       const { name, value, files } = target;
-  
+
       if (name === "image" && files?.length) {
         const file = files[0];
         setUpdatedFood((prev) => ({ ...prev, image: file }));
-  
+
         const reader = new FileReader();
         reader.onload = () => setPhoto(reader.result as string);
         reader.readAsDataURL(file);
         return;
       }
-  
+
       setUpdatedFood((prev) => ({ ...prev, [name]: value }));
     } else {
       setUpdatedFood((prev) => ({ ...prev, [e.name]: e.value }));
     }
   };
-  
 
   const uploadImage = async (file: File) => {
     try {
@@ -112,11 +114,9 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button>
-            <div className="h-[30px] w-[30px] bg-red-500 flex items-center justify-center text-white rounded-full">
-              +
-            </div>
-          </Button>
+          <div className="absolute bottom-2 z-10 right-2 h-11 w-11 items-center flex justify-center rounded-full bg-[white] hover:cursor-pointer">
+            <Pencil className="text-[red] h-5 w-5" />
+          </div>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px] bg-[white]">
           <DialogHeader>
