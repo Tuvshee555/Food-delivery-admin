@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCategory } from "@/utils/UseCategory";
+import { toast } from "sonner";
 
 export const AddCategoryModal = () => {
   const { category, setCategory, postData } = useCategory();

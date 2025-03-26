@@ -2,6 +2,7 @@ import { useState, ChangeEvent } from "react";
 import { uploadImage } from "@/utils/UploadImage";
 import axios from "axios";
 import { FoodData, FoodModelProps } from "@/type/type";
+import { toast } from "sonner";
 
 
 export const AddFoodModel: React.FC<FoodModelProps> = ({
@@ -64,8 +65,10 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       });
       refreshFood();
       closeModal();
+      toast("Successfully added food")
     } catch (error) {
       console.error("Error adding food:", error);
+      toast.error("Failed to add food")
     } finally {
       setLoading(false);
     }
