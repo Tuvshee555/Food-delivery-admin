@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 
-export const useCategory = () => {
+export const useCa = () => {
   const [category, setCategory] = useState({ username: "" });
 
   const postData = async () => {
