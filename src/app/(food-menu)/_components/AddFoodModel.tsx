@@ -3,7 +3,7 @@ import { uploadImage } from "@/utils/UploadImage";
 import axios from "axios";
 import { FoodData, FoodModelProps } from "@/type/type";
 import { toast } from "sonner";
-
+import { X } from "lucide-react";
 
 export const AddFoodModel: React.FC<FoodModelProps> = ({
   category,
@@ -40,6 +40,9 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       reader.readAsDataURL(file);
     }
   };
+  const removePhoto = () => {
+    setPhoto("");
+  };
 
   const addFood = async () => {
     try {
@@ -65,10 +68,10 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       });
       refreshFood();
       closeModal();
-      toast("Successfully added food")
+      toast("Successfully added food");
     } catch (error) {
       console.error("Error adding food:", error);
-      toast.error("Failed to add food")
+      toast.error("Failed to add food");
     } finally {
       setLoading(false);
     }
@@ -129,10 +132,16 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
           <div className="gap-2 flex flex-col">
             <label className="text-sm font-medium">Food Image</label>
             {foodData?.image && photo ? (
-              <img
-                className="h-[138px] w-[412px] bg-[red] object-cover"
-                src={photo}
-              />
+              <div className="relative">
+                <img
+                  className="h-[138px] w-full rounded-xl bg-[red] object-fit"
+                  src={photo}
+                />
+                <X
+                  className="absolute h-[20px] w-[20px] align-center flex justify-center bg-black text-[white] right-2 top-2 rounded-full"
+                  onClick={() => removePhoto()}
+                ></X>
+              </div>
             ) : (
               <div className="border border-dashed rounded-md flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100">
                 <input

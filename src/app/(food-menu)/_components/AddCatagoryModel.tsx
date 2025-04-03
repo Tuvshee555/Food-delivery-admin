@@ -9,12 +9,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useCategory } from "@/utils/UseCategory";
+import { useCategory } from "@/provider/CategoryProvider";
 import { toast } from "sonner";
 
 export const AddCategoryModal = () => {
   const { category, setCategory, postData } = useCategory();
-
   return (
     <div className="w-[1171px] p-[24px]">
       <div className="text-black font-semibold text-[20px] mb-[26px]">
