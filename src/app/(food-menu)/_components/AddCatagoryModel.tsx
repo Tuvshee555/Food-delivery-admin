@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Dialog,
   DialogContent,
@@ -10,10 +8,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCategory } from "@/provider/CategoryProvider";
-import { toast } from "sonner";
 
 export const AddCategoryModal = () => {
   const { category, setCategory, postData } = useCategory();
+
   return (
     <div className="w-[1171px] p-[24px]">
       <div className="text-black font-semibold text-[20px] mb-[26px]">
@@ -41,7 +39,7 @@ export const AddCategoryModal = () => {
               <input
                 id="name"
                 className="col-span-3 border p-2 rounded"
-                value={category.username}
+                value={category.username} // Assuming category has 'username'
                 onChange={(e) =>
                   setCategory((prev) => ({ ...prev, username: e.target.value }))
                 }

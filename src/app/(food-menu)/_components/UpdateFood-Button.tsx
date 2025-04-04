@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +20,6 @@ import { toast } from "sonner";
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
-  category,
 }) => {
   const [updatedFood, setUpdatedFood] = useState<FoodType>({ ...food });
   const [photo, setPhoto] = useState<string | undefined>(
@@ -93,11 +93,11 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
       });
       console.log("updatedFood", response.data);
       setUpdatedFood(response.data);
-      toast("succesfully updated food data")
+      toast("succesfully updated food data");
       refreshFood();
     } catch (error) {
       console.log("Error updating food", error);
-      toast.error("Failed to update food data")
+      toast.error("Failed to update food data");
     } finally {
       setLoading(false);
     }
@@ -106,10 +106,10 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   const DeleteFood = async () => {
     try {
       await axios.delete(`http://localhost:4000/food/${food._id}`);
-      toast("succesfully deleted food")
+      toast("succesfully deleted food");
     } catch (error) {
       console.log("Delete", error);
-      toast("failed to delete food")
+      toast("failed to delete food");
     } finally {
       refreshFood();
     }

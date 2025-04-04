@@ -1,30 +1,41 @@
+import { createContext, ReactNode, useContext } from "react";
 import { Datas } from "@/type/type";
 
-import axios from "axios";
-import { createContext, ReactNode, useContext } from "react";
 type CategoryProviderType = {
-  category: Datas[];
+  category: Datas; // You need to pass a category value somehow, it could be from props or external state.
+  setCategory: React.Dispatch<React.SetStateAction<Datas>>; // You can set category directly if needed.
   refetchCategory: () => void;
+  postData: () => void;
 };
 
-const getData = async () => {
-  try {
-    const response = await axios.get("http://localhost:4000/category");
-    return response.data
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-  }
-};
 const CategoriesContext = createContext<CategoryProviderType | null>(null);
 
-export const CategoriesProvider = ({children}:{childer:ReactNode}) => {
-
-
-    <CategoriesContext.Provider value={{category, refetchCategory}}>
-        {children}
+export const CategoriesProvider = ({
+  children,
+  category,
+  setCategory,
+  refetchCategory,
+  postData,
+}: {
+  children: ReactNode;
+  category: Datas;
+  setCategory: React.Dispatch<React.SetStateAction<Datas>>;
+  refetchCategory: () => void;
+  postData: () => void;
+}) => {
+  return (
+    <CategoriesContext.Provider
+      value={{ category, setCategory, refetchCategory, postData }}
+    >
+      {children}
     </CategoriesContext.Provider>
-}
+  );
+};
+
 export const useCategory = () => {
-    const context = useContext(CategoriesContext)
-    return context
-}
+  const context = useContext(CategoriesContext);
+  if (!context) {
+    throw new Error("useCategory must be used within a CategoriesProvider");
+  }
+  return context;
+};

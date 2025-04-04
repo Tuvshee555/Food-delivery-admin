@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
 import { useState, ChangeEvent } from "react";
 import { uploadImage } from "@/utils/UploadImage";
 import axios from "axios";

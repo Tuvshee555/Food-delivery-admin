@@ -5,8 +5,7 @@ export type FoodType = {
   image?: File | string;
   ingredients: string;
   category: string;
-  refreshFood: () => void;
-  foodData: any[];
+  foodData: [];
   categories: string;
 };
 
@@ -45,6 +44,9 @@ export type Datas = {
   categoryName: string;
   _id: string;
   foodCount: number;
+  category: string;
+  prev: undefined | [];
+  username: string;
 };
 
 export type CategoriesProps = {

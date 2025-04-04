@@ -1,10 +1,10 @@
+import { FoodType } from "@/type/type";
 import { AddFoodButton } from "./AddFoodButton";
 import { FoodCard } from "./FoodCard";
 
-
 type FoodCategoryProps = {
   category: { _id: string; categoryName: string };
-  foodData: any[];
+  foodData: FoodType[];
   refreshFood: () => void;
 };
 
@@ -15,7 +15,6 @@ export const FoodCategoryList = ({
 }: FoodCategoryProps) => {
   const filteredFood = foodData.filter(
     (dish) => dish.category === category._id
-    
   );
 
   return (
@@ -26,10 +25,7 @@ export const FoodCategoryList = ({
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <AddFoodButton
-          category={category}
-          refreshFood={refreshFood}
-        />
+        <AddFoodButton category={category} refreshFood={refreshFood} />
         {filteredFood.map((dish) => (
           <FoodCard
             key={dish._id}
