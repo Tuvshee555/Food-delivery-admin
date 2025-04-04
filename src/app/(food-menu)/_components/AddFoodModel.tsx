@@ -40,15 +40,20 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       reader.readAsDataURL(file);
     }
   };
+
   const removePhoto = () => {
     setPhoto("");
   };
 
   const addFood = async () => {
+    if (!foodData.foodName || !foodData.price || !foodData.ingredients) {
+      toast.error("Please fill all fields.");
+      return;
+    }
+
     try {
       setLoading(true);
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
-      console.log(imageUrl);
 
       const res = await axios.post("http://localhost:4000/food", {
         foodName: foodData.foodName,
@@ -57,6 +62,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
         image: imageUrl,
         category: foodData.category,
       });
+
       console.log(res);
 
       setFoodData({
@@ -67,7 +73,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
         category: "",
       });
       refreshFood();
-      closeModal();
+      closeModal(); // Close modal after adding food
       toast("Successfully added food");
     } catch (error) {
       console.error("Error adding food:", error);
@@ -109,10 +115,13 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
               <label className="text-sm font-medium">Food Price</label>
               <input
                 name="price"
+                type="number"
                 placeholder="Enter price..."
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={foodData.price}
                 onChange={handleChange}
+                inputMode="numeric"
+                pattern="[0-9]*"
               />
             </div>
           </div>
