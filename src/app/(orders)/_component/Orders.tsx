@@ -99,10 +99,10 @@ export const Orders = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order, index) => (
+          {orders.map((order) => (
             <>
-              <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
+              <TableRow key={order._id}>
+                <TableCell>{orders.indexOf(order) + 1}</TableCell>
                 <TableCell>{order.user.email}</TableCell>
                 <TableCell>
                   <Button
@@ -145,11 +145,14 @@ export const Orders = () => {
                 </TableCell>
               </TableRow>
               {expandedRows.includes(order._id) && (
-                <TableRow>
+                <TableRow key={`expanded-${order._id}`}>
                   <TableCell colSpan={7}>
                     <div className="flex flex-col gap-2 bg-gray-100 p-2 rounded-md">
-                      {order.foodOrderItems.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
+                      {order.foodOrderItems.map((item) => (
+                        <div
+                          key={item.foodId._id}
+                          className="flex items-center gap-2"
+                        >
                           <img
                             src={item.foodId.image}
                             alt={item.foodId.name}
