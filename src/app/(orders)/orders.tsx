@@ -1,8 +1,6 @@
-"use client";
-
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Key } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,26 +11,36 @@ import {
   TableBody,
 } from "@/components/ui/table";
 
+type FoodItem = {
+  foodId: {
+    _id: string;
+    name: string;
+    image: string;
+  };
+  quantity: number;
+};
+
 type Order = {
-  id: number;
-  customer: string;
-  foods: { name: string; quantity: number; image: string }[];
-  date: string;
-  total: number;
-  address: string;
-  deliveryState: "Pending" | "Delivered" | "Cancelled";
+  _id: string;
+  createdAt: string;
+  status: "PENDING" | "DELIVERED" | "CANCELLED";
+  totalprice: number;
+  user: {
+    email: string;
+    address: string;
+  };
+  foodOrderItems: FoodItem[];
 };
 
 export const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);
+  const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await axios.get("http://localhost:4000/order");
         setOrders(response.data);
-        console.log(response.data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -40,10 +48,39 @@ export const Orders = () => {
     fetchOrders();
   }, []);
 
-  const toggleRow = (id: number) => {
+  const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
+  };
+
+  const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
+    try {
+      await axios.patch(`http://localhost:4000/order/${id}`, {
+        status: newStatus,
+      });
+
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === id ? { ...order, status: newStatus } : order
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+    }
+  };
+
+  const getStatusColor = (status: Order["status"]) => {
+    switch (status) {
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-700";
+      case "DELIVERED":
+        return "bg-green-100 text-green-700";
+      case "CANCELLED":
+        return "bg-red-100 text-red-700";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -58,62 +95,69 @@ export const Orders = () => {
             <TableCell>Date</TableCell>
             <TableCell>Total</TableCell>
             <TableCell>Delivery Address</TableCell>
-            <TableCell>Delivery State</TableCell>
+            <TableCell>Status</TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order, index) => (
             <>
-              <TableRow key={order.id}>
+              <TableRow key={index}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{order.customer}</TableCell>
+                <TableCell>{order.user.email}</TableCell>
                 <TableCell>
                   <Button
                     variant="ghost"
                     className="flex items-center"
-                    onClick={() => toggleRow(order.id)}
+                    onClick={() => toggleRow(order._id)}
                   >
-                    {order.foods.length} foods
-                    {expandedRows.includes(order.id) ? (
+                    {order.foodOrderItems.length} foods
+                    {expandedRows.includes(order._id) ? (
                       <ChevronDown size={16} className="ml-2" />
                     ) : (
                       <ChevronRight size={16} className="ml-2" />
                     )}
                   </Button>
                 </TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>${order.total}</TableCell>
+                <TableCell>
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>${order.totalprice}</TableCell>
                 <TableCell className="truncate max-w-[150px]">
-                  {order.address}
+                  {order.user.address}
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    className={`px-2 py-1 rounded-full ${
-                      order.deliveryState === "Pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : order.deliveryState === "Delivered"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+                  <select
+                    value={order.status}
+                    onChange={(e) =>
+                      handleStatusChange(
+                        order._id,
+                        e.target.value as Order["status"]
+                      )
+                    }
+                    className={`text-sm px-2 py-1 rounded-md font-medium ${getStatusColor(
+                      order.status
+                    )}`}
                   >
-                    {order.deliveryState}
-                  </Badge>
+                    <option value="PENDING">PENDING</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                  </select>
                 </TableCell>
               </TableRow>
-              {expandedRows.includes(order.id) && (
+              {expandedRows.includes(order._id) && (
                 <TableRow>
                   <TableCell colSpan={7}>
                     <div className="flex flex-col gap-2 bg-gray-100 p-2 rounded-md">
-                      {order.foods.map((food, idx) => (
+                      {order.foodOrderItems.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-2">
                           <img
-                            src={food.image}
-                            alt={food.name}
+                            src={item.foodId.image}
+                            alt={item.foodId.name}
                             className="w-10 h-10 rounded-md"
                           />
-                          <span className="text-sm">{food.name}</span>
+                          <span className="text-sm">{item.foodId.name}</span>
                           <span className="text-gray-500 text-sm">
-                            x {food.quantity}
+                            x {item.quantity}
                           </span>
                         </div>
                       ))}
@@ -125,6 +169,7 @@ export const Orders = () => {
           ))}
         </TableBody>
       </Table>
+
       {/* Pagination (Hardcoded for now) */}
       <div className="flex justify-end mt-4">
         <Button variant="ghost">Previous</Button>
