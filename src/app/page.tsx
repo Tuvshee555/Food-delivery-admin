@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Sidebar } from "../components/Side-Bar";
 import { FoodMenu } from "./(food-menu)/FoodMenu";
-import { Orders } from "./(orders)/Orders";
+import { Orders } from "./(orders)/_component/Orders";
 
 export default function Home() {
   const [page, setPage] = useState("Food-menu");
