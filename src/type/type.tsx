@@ -1,3 +1,5 @@
+import React from "react";
+
 export type FoodType = {
   _id: string;
   foodName: string;
@@ -51,4 +53,17 @@ export type Datas = {
 
 export type CategoriesProps = {
   category: CategoryType[];
+};
+
+export type SignUpEmailStepType = {
+  nextStep: () => void;
+  stepBack: () => void;
+  setUser: React.Dispatch<
+    React.SetStateAction<{
+      email: string;
+      password: string;
+      repassword: string;
+    }>
+  >;
+  user: { email: string; password: string; repassword: string };
 };
