@@ -1,4 +1,5 @@
 "use client";
 
-// import { useState } from "react";
-// import axios from "axios";
+export const PostUser = () => {
+  return <div>Hello mf</div>;
+};
