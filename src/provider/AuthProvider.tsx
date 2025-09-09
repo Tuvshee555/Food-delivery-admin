@@ -26,9 +26,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    console.log(storedToken, "token");
 
     if (!storedToken) {
-      router.replace("/log-in");
+      router.push("/log-in");
       setLoading(false);
       return;
     }
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // If expired, force logout
     if (isExpired) {
       localStorage.removeItem("token");
-      router.replace("/log-in");
+      router.push("/log-in");
     }
 
     setLoading(false);

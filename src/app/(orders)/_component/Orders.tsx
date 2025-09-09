@@ -3,13 +3,6 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableCell,
-  TableBody,
-} from "@/components/ui/table";
 import React from "react";
 
 type FoodItem = {
@@ -43,6 +36,7 @@ export const Orders = () => {
       try {
         const response = await axios.get("http://localhost:4000/order");
         setOrders(response.data);
+        console.log(response.data, "orders");
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -87,94 +81,77 @@ export const Orders = () => {
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
       <h2 className="text-xl font-semibold mb-4">Orders</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell>Customer</TableCell>
-            <TableCell>Food</TableCell>
-            <TableCell>Date</TableCell>
-            <TableCell>Total</TableCell>
-            <TableCell>Delivery Address</TableCell>
-            <TableCell>Status</TableCell>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order, index) => (
-            <React.Fragment key={order._id}>
-              <TableRow>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{order.user.email}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center"
-                    onClick={() => toggleRow(order._id)}
-                  >
-                    {order.foodOrderItems.length} foods
-                    {expandedRows.includes(order._id) ? (
-                      <ChevronDown size={16} className="ml-2" />
-                    ) : (
-                      <ChevronRight size={16} className="ml-2" />
-                    )}
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>${order.totalprice}</TableCell>
-                <TableCell className="truncate max-w-[150px]">
-                  {order.user.address}
-                </TableCell>
-                <TableCell>
-                  <select
-                    value={order.status}
-                    onChange={(e) =>
-                      handleStatusChange(
-                        order._id,
-                        e.target.value as Order["status"]
-                      )
-                    }
-                    className={`text-sm px-2 py-1 rounded-md font-medium ${getStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    <option value="PENDING">PENDING</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
-                </TableCell>
-              </TableRow>
 
-              {expandedRows.includes(order._id) && (
-                <TableRow key={`expanded-${order._id}`}>
-                  <TableCell colSpan={7}>
-                    <div className="flex flex-col gap-2 bg-gray-100 p-2 rounded-md">
-                      {order.foodOrderItems.map((item, idx) => (
-                        <div
-                          key={`${order._id}-${item.foodId._id}-${idx}`}
-                          className="flex items-center gap-2"
-                        >
-                          <img
-                            // src={`http://localhost:4000/${item.foodId.image}`}
-                            src={`http://localhost:4000/${item.foodId.image}`}
-                            alt={item.foodId.name}
-                            className="w-10 h-10 rounded-md"
-                          />
-                          <span className="text-sm">{item.foodId.name}</span>
-                          <span className="text-gray-500 text-sm">
-                            x {item.quantity}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="flex flex-col gap-4">
+        {orders.map((order, index) => (
+          <div key={order._id} className="border rounded-md p-4 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-4 items-center">
+                <span className="font-semibold">{index + 1}.</span>
+                <span>{order.user.email}</span>
+                <Button
+                  variant="ghost"
+                  className="flex items-center"
+                  onClick={() => toggleRow(order._id)}
+                >
+                  {order.foodOrderItems.length} foods
+                  {expandedRows.includes(order._id) ? (
+                    <ChevronDown size={16} className="ml-2" />
+                  ) : (
+                    <ChevronRight size={16} className="ml-2" />
+                  )}
+                </Button>
+              </div>
+              <div className="flex gap-4 items-center">
+                <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                <span>${order.totalprice}</span>
+                <span className="truncate max-w-[150px]">
+                  {order.user.address}
+                </span>
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    handleStatusChange(
+                      order._id,
+                      e.target.value as Order["status"]
+                    )
+                  }
+                  className={`text-sm px-2 py-1 rounded-md font-medium ${getStatusColor(
+                    order.status
+                  )}`}
+                >
+                  <option value="PENDING">PENDING</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+              </div>
+            </div>
+
+            {expandedRows.includes(order._id) && (
+              <div className="flex flex-wrap gap-4 mt-4">
+                {order.foodOrderItems.map((item, idx) => (
+                  <div
+                    key={`${order._id}-${item.foodId._id}-${idx}`} // ✅ unique even for duplicates
+                    className="flex flex-col items-center gap-1 w-20"
+                  >
+                    <img
+                      src={item.foodId.image}
+                      alt={item.foodId.name}
+                      className="w-16 h-16 rounded-md object-cover"
+                    />
+                    <span className="text-xs text-center">
+                      {item.foodId.name}
+                    </span>
+                    <span className="text-gray-500 text-xs">
+                      x {item.quantity}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       {/* Pagination (hardcoded for now) */}
       <div className="flex justify-end mt-4 gap-2">
