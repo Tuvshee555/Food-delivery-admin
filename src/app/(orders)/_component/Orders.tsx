@@ -10,6 +10,7 @@ import {
   TableCell,
   TableBody,
 } from "@/components/ui/table";
+import React from "react";
 
 type FoodItem = {
   foodId: {
@@ -36,6 +37,7 @@ export const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
 
+  // Fetch orders from backend
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -59,7 +61,6 @@ export const Orders = () => {
       await axios.patch(`http://localhost:4000/order/${id}`, {
         status: newStatus,
       });
-
       setOrders((prev) =>
         prev.map((order) =>
           order._id === id ? { ...order, status: newStatus } : order
@@ -99,10 +100,10 @@ export const Orders = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <>
-              <TableRow key={order._id}>
-                <TableCell>{orders.indexOf(order) + 1}</TableCell>
+          {orders.map((order, index) => (
+            <React.Fragment key={order._id}>
+              <TableRow>
+                <TableCell>{index + 1}</TableCell>
                 <TableCell>{order.user.email}</TableCell>
                 <TableCell>
                   <Button
@@ -144,17 +145,19 @@ export const Orders = () => {
                   </select>
                 </TableCell>
               </TableRow>
+
               {expandedRows.includes(order._id) && (
                 <TableRow key={`expanded-${order._id}`}>
                   <TableCell colSpan={7}>
                     <div className="flex flex-col gap-2 bg-gray-100 p-2 rounded-md">
-                      {order.foodOrderItems.map((item) => (
+                      {order.foodOrderItems.map((item, idx) => (
                         <div
-                          key={item.foodId._id}
+                          key={`${order._id}-${item.foodId._id}-${idx}`}
                           className="flex items-center gap-2"
                         >
                           <img
-                            src={item.foodId.image}
+                            // src={`http://localhost:4000/${item.foodId.image}`}
+                            src={`http://localhost:4000/${item.foodId.image}`}
                             alt={item.foodId.name}
                             className="w-10 h-10 rounded-md"
                           />
@@ -168,13 +171,13 @@ export const Orders = () => {
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
 
-      {/* Pagination (Hardcoded for now) */}
-      <div className="flex justify-end mt-4">
+      {/* Pagination (hardcoded for now) */}
+      <div className="flex justify-end mt-4 gap-2">
         <Button variant="ghost">Previous</Button>
         <Button variant="ghost">1</Button>
         <Button variant="ghost">2</Button>

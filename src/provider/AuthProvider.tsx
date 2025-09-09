@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, createContext, useContext, useEffect } from "react";
-
+import React, { useState, createContext, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useJwt } from "react-jwt";
 
@@ -20,16 +19,30 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-  const { decodedToken, reEvaluateToken } = useJwt<UserType>(token || "");
+  const [loading, setLoading] = useState(true); // new state
+  const { decodedToken, reEvaluateToken, isExpired } = useJwt<UserType>(
+    token || ""
+  );
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+
     if (!storedToken) {
-      router.push("/log-in");
-    } else {
-      setToken(storedToken);
-      reEvaluateToken(storedToken);
+      router.replace("/log-in");
+      setLoading(false);
+      return;
     }
+
+    setToken(storedToken);
+    reEvaluateToken(storedToken);
+
+    // If expired, force logout
+    if (isExpired) {
+      localStorage.removeItem("token");
+      router.replace("/log-in");
+    }
+
+    setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -43,6 +56,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(null);
     }
   };
+
+  // Prevent children from flashing before redirect
+  if (loading) return <div>Loading...</div>;
 
   return (
     <AuthContext.Provider
