@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 
 export const Sidebar = ({ setPage }: { setPage: (value: string) => void }) => {
-  const [activePage, setActivePage] = useState<string>("");
+  const [activePage, setActivePage] = useState("Food-menu");
 
   const handleClick = (page: string) => {
     setActivePage(page); // Set the active page when a button is clicked
@@ -13,9 +13,9 @@ export const Sidebar = ({ setPage }: { setPage: (value: string) => void }) => {
   };
 
   return (
-    <div className="w-[205px] p-[36px] flex flex-col border-r border-gray-300">
+    <div className="w-[205px] h-full p-[36px] flex flex-col border-r border-gray-300">
       <div>
-        <Link href={""} className="flex items-center">
+        <Link href={""} className="flex items-center mb-[25px]">
           <img src="/order.png" className="w-[36px] h-[30px]" />
           <div className="ml-2">
             <div className="text-[18px] font-semibold">NomNom</div>

@@ -4,11 +4,13 @@ import { useAuth } from "@/provider/AuthProvider";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function LogIn() {
   const [user, setUser] = useState({
     email: "",
     password: "",
+    role: "ADMIN",
   });
   const [loading, setLoading] = useState(false);
 
@@ -18,31 +20,29 @@ export default function LogIn() {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const response = await axios.post(`http://localhost:4000/user/login`, {
-        email: user.email,
-        password: user.password,
-      });
+      const response = await axios.post(
+        `http://localhost:4000/user/login`,
+        user
+      );
 
       if (response.data.success) {
-        const { token, user: loggedInUser } = response.data;
+        const { token, user } = response.data;
 
         localStorage.setItem("token", token);
-        localStorage.setItem("email", loggedInUser.email);
-        localStorage.setItem("userId", loggedInUser.userId);
+        localStorage.setItem("email", user.email);
+        localStorage.setItem("userId", user.userId || user.user_id);
 
         setAuthToken(token);
-        router.push("/food-menu"); // ✅ fixed path
+        router.push("/home-page");
       }
     } catch (error) {
       console.log(error);
+      console.log(loading);
     } finally {
       setLoading(false);
+      toast.success("Succesfully logged in");
     }
   };
-
-  if (loading) {
-    return <div className="items-center justify-center">Loading...</div>;
-  }
 
   return (
     <div className="p-4">
@@ -52,7 +52,7 @@ export default function LogIn() {
         value={user.email}
         onChange={(e) =>
           setUser((prev) => ({ ...prev, email: e.target.value }))
-        } // ✅ fixed
+        }
         placeholder="Email"
         className="border p-2 mb-2 block"
       />
@@ -62,7 +62,7 @@ export default function LogIn() {
         type="password"
         onChange={(e) =>
           setUser((prev) => ({ ...prev, password: e.target.value }))
-        } // ✅ fixed
+        }
         placeholder="Password"
         className="border p-2 mb-2 block"
       />

@@ -1,11 +1,11 @@
 "use client";
 
-import { PostUser } from "@/components/PostUser";
+import LogIn from "./log-in/page";
 
 export default function Home() {
   return (
     <>
-      <PostUser />
+      <LogIn />
     </>
   );
 }

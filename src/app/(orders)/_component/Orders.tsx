@@ -79,7 +79,7 @@ export const Orders = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="p-4 bg-white rounded-lg shadow-md w-[800px]">
       <h2 className="text-xl font-semibold mb-4">Orders</h2>
 
       <div className="flex flex-col gap-4">

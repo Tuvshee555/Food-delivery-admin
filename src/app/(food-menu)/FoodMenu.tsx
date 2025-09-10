@@ -42,7 +42,7 @@ export const FoodMenu = () => {
   };
 
   return (
-    <div className="w-screen bg-white text-black flex">
+    <div className="w-full bg-white text-black flex">
       <div className="p-6 bg-[#f4f4f5] strech w-screen">
         <div className="bg-[white] rounded-[8px] p-[24px]">
           <div className="text-[20px] font-semibold">Dishes category</div>
