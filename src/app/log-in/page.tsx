@@ -73,6 +73,12 @@ export default function LogIn() {
       >
         Login
       </button>
+      <button
+        className="h-10 w-20 bg-red-600 text-white rounded"
+        onClick={() => router.push(`sign-up`)}
+      >
+        Sign up
+      </button>
     </div>
   );
 }

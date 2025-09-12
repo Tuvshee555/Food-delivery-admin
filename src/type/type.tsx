@@ -67,3 +67,18 @@ export type SignUpEmailStepType = {
   >;
   user: { email: string; password: string; repassword: string };
 };
+// user state type
+export type User = {
+  email: string;
+  password: string;
+  repassword: string;
+  role?: string;
+};
+
+// props for CreatePassword
+export type UserType = {
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+  nextStep: () => void;
+  stepBack: () => void;
+  user: User;
+};

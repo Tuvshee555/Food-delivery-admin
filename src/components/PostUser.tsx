@@ -1,60 +1,81 @@
 "use client";
 
-import axios from "axios";
+import { User } from "@/type/type";
+import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
+import { CreatePassword } from "./CreatePassword";
+import { CreateEmail } from "./CreateEmail";
 
 export const PostUser = () => {
-  const [user, setUser] = useState({
+  const [signUpStep, setSignupStep] = useState(1);
+  const [user, setUser] = useState<User>({
     email: "",
     password: "",
     repassword: "",
+    role: "ADMIN",
   });
-  const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handlePostUser = async () => {
+    if (!user.email || !user.password) {
+      toast.error("Email and password are required!");
+      return;
+    }
+
+    if (user.password !== user.repassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
     try {
-      setLoading(true);
-      const response = await axios.post(`http://localhost:4000/user`, {
-        email: user.email,
-        password: user.password,
-        user: "ADMIN",
-      });
-      setLoading(false);
+      const response = await axios.post(`http://localhost:4000/user`, user);
       console.log("Created admin", response.data);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
+      toast.success("Welcome aboard! You can now log in.");
+      router.push("/log-in");
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      const message = error.response?.data?.message;
+
+      if (message) {
+        toast.error(message);
+      } else {
+        toast.error("Something went wrong");
+      }
+
+      console.error(error);
     }
   };
 
-  if (loading) return <div className="text-[20px] text-black">Loading...</div>;
+  const nextStep = () => {
+    if (signUpStep === 2) {
+      handlePostUser();
+      router.push(`log-in`);
+    } else {
+      setSignupStep((prev) => prev + 1);
+    }
+  };
+
+  const stepBack = () => {
+    setSignupStep((prev) => prev - 1);
+  };
+
   return (
     <div>
-      <input
-        value={user.email}
-        onChange={(e) =>
-          setUser((prev) => ({ ...prev, email: e.target.value }))
-        }
-        placeholder="email"
-      ></input>
-      <input
-        value={user.password}
-        onChange={(e) =>
-          setUser((prev) => ({ ...prev, password: e.target.value }))
-        }
-        placeholder="password"
-      ></input>
-      <input
-        value={user.repassword}
-        onChange={(e) =>
-          setUser((prev) => ({ ...prev, repassword: e.target.value }))
-        }
-        placeholder="confirm password"
-      ></input>
-      <div
-        onClick={() => handlePostUser()}
-        className="h-10 w-30 bg-red rounded-sm"
-      ></div>
+      {signUpStep === 1 && (
+        <CreateEmail setUser={setUser} nextStep={nextStep} user={user} />
+      )}
+
+      {signUpStep >= 2 && (
+        <CreatePassword
+          setUser={setUser}
+          nextStep={nextStep}
+          user={user}
+          stepBack={stepBack}
+        />
+      )}
     </div>
   );
 };
