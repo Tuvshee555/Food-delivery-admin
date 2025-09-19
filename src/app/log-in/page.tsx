@@ -108,7 +108,11 @@ export default function LogIn() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           {/* Forgot password */}
-          <p className="text-[14px] underline text-black hover:text-red-500 cursor-pointer">
+          {/* Forgot password */}
+          <p
+            className="text-[14px] underline text-black hover:text-red-500 cursor-pointer"
+            onClick={() => router.push("/forgot-password")}
+          >
             Forgot your password?
           </p>
 
