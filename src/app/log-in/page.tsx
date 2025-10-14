@@ -8,6 +8,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 export default function LogIn() {
   const [user, setUser] = useState({
@@ -22,6 +23,9 @@ export default function LogIn() {
   const { setAuthToken } = useAuth();
   const router = useRouter();
 
+  // ------------------------
+  // Email/Password login
+  // ------------------------
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -53,6 +57,40 @@ export default function LogIn() {
       toast.error("An error occurred while logging in.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ------------------------
+  // Google login
+  // ------------------------
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) {
+      toast.error("No Google credentials received!");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:4000/user/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+      const data = await res.json();
+
+      if (data.token && data.user) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("email", data.user.email);
+        localStorage.setItem("userId", data.user._id);
+
+        setAuthToken(data.token);
+        toast.success("Successfully logged in with Google!");
+        router.push("/home-page");
+      } else {
+        toast.error("Google login failed!");
+      }
+    } catch (error) {
+      console.error("Google login failed:", error);
+      toast.error("Google login failed!");
     }
   };
 
@@ -108,7 +146,6 @@ export default function LogIn() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           {/* Forgot password */}
-          {/* Forgot password */}
           <p
             className="text-[14px] underline text-black hover:text-red-500 cursor-pointer"
             onClick={() => router.push("/forgot-password")}
@@ -117,17 +154,34 @@ export default function LogIn() {
           </p>
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`h-[36px] w-full rounded-[8px] text-white transition duration-300 ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#d1d1d1] hover:bg-black"
-            }`}
-          >
-            {loading ? "Logging in..." : "Log in"}
-          </button>
+          <div>
+            {" "}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`h-[36px] w-full rounded-[8px] text-white transition duration-300 ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#d1d1d1] hover:bg-black"
+              }`}
+            >
+              {loading ? "Logging in..." : "Log in"}
+            </button>
+            {/* Divider and Google Login */}
+            <div className="mt-2">
+              <div className="flex items-center gap-2 text-gray-500 ">
+                <span className="w-full h-px bg-gray-300" />
+                or
+                <span className="w-full h-px bg-gray-300" />
+              </div>
+              <div className="mt-2">
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => toast.error("Google login error")}
+                />
+              </div>
+            </div>
+          </div>
         </form>
 
         <div className="flex gap-3 justify-center">
