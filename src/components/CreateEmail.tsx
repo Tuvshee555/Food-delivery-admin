@@ -34,7 +34,10 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
       const res = await fetch("http://localhost:4000/user/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: credentialResponse.credential }),
+        body: JSON.stringify({
+          token: credentialResponse.credential,
+          role: "ADMIN", // ✅ Send selected role
+        }),
       });
 
       const data = await res.json();
@@ -49,7 +52,7 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
       setUser(data.user);
 
       toast.success("Signed up with Google successfully!");
-      router.push("/home-page"); // redirect to login instead of home
+      router.push("/log-in"); // ✅ redirect to login instead of home
     } catch (error) {
       console.error("Google signup failed:", error);
       toast.error("Google signup failed!");
@@ -71,6 +74,7 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
           Sign up to explore your favorite dishes.
         </p>
 
+        {/* Email input */}
         <input
           value={user.email}
           onChange={(e) =>
