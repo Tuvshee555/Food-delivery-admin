@@ -1,4 +1,7 @@
 "use client";
+
+// import QPayPage from "../qpay/page";
+
 import { useState } from "react";
 import { FoodMenu } from "@/app/(food-menu)/FoodMenu";
 import { Orders } from "@/app/(orders)/_component/Orders";
@@ -19,6 +22,7 @@ export default function HomePage() {
           {page === "Orders" && <Orders />}
         </div>
       </div>
+      {/* <QPayPage /> */}
     </>
   );
 }

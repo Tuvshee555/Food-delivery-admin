@@ -19,14 +19,13 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // new state
+  const [loading, setLoading] = useState(true);
   const { decodedToken, reEvaluateToken, isExpired } = useJwt<UserType>(
     token || ""
   );
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    console.log(storedToken, "token");
 
     if (!storedToken) {
       router.push("/log-in");
@@ -37,8 +36,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(storedToken);
     reEvaluateToken(storedToken);
 
-    // If expired, force logout
-    if (isExpired) {
+    // ⚠️ Changed: Only redirect if token exists AND isExpired
+    if (storedToken && isExpired) {
       localStorage.removeItem("token");
       router.push("/log-in");
     }
@@ -55,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       localStorage.removeItem("token");
       setToken(null);
+      router.push("/log-in"); // ⚠️ Added: redirect on logout
     }
   };
 

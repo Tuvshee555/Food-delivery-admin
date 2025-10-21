@@ -65,7 +65,14 @@ export const PostUser = () => {
   return (
     <div>
       {signUpStep === 1 && (
-        <CreateEmail setUser={setUser} nextStep={nextStep} user={user} />
+        <CreateEmail
+          setUser={setUser}
+          nextStep={nextStep}
+          user={user}
+          stepBack={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
       )}
 
       {signUpStep >= 2 && (
