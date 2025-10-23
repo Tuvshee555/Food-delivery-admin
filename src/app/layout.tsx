@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/provider/Providers";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+// import { SpeedInsights } from "@vercel/speed-insights/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,7 +32,7 @@ export default function RootLayout({
         <GoogleOAuthProvider clientId="424549876529-sln60g4usp2b71ijfihqs96o01qhogko.apps.googleusercontent.com">
           <Providers>
             {children}
-            <SpeedInsights />
+            {/* <SpeedInsights /> */}
           </Providers>
         </GoogleOAuthProvider>
       </body>

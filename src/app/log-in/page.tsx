@@ -47,7 +47,8 @@ export default function LogIn() {
 
     const payload = {
       email: user.email,
-      password: user.password, // send only what backend expects
+      password: user.password,
+      role: user.role, // send only what backend expects
     };
 
     console.log("Sending login payload:", payload);
