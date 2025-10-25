@@ -9,15 +9,19 @@ export default function QPayPage() {
   const [status, setStatus] = useState<string>("");
 
   const createPayment = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        order_id: `ORDER_${Date.now()}`,
-        amount: 500,
-        // amount: 10000,
-      }),
-    });
+    // const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay`, {
+    const res = await fetch(
+      "https://gertrud-unaccomplishable-viewlessly.ngrok-free.dev/qpay/create",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_id: `ORDER_${Date.now()}`,
+          amount: 500,
+          // amount: 10000,
+        }),
+      }
+    );
     const data = await res.json();
     setQrImage(`data:image/png;base64,${data.qr_image}`);
     setInvoiceId(data.invoice_id);
