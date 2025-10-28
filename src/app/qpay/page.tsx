@@ -7,45 +7,63 @@ export default function QPayPage() {
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [invoiceId, setInvoiceId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const createPayment = async () => {
-    // const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay`, {
-    const res = await fetch(
-      "https://gertrud-unaccomplishable-viewlessly.ngrok-free.dev/qpay/create",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order_id: `ORDER_${Date.now()}`,
-          amount: 500,
-          // amount: 10000,
-        }),
-      }
-    );
-    const data = await res.json();
-    setQrImage(`data:image/png;base64,${data.qr_image}`);
-    setInvoiceId(data.invoice_id);
-    setStatus("⌛ Waiting for payment...");
-  };
-
-  // Poll payment status automatically
-  useEffect(() => {
-    if (!invoiceId) return;
-    const interval = setInterval(async () => {
+    setLoading(true);
+    try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay/check`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay/create`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ invoice_id: invoiceId }),
+          body: JSON.stringify({
+            orderId: `ORDER_${Date.now()}`,
+            amount: 10000,
+          }),
         }
       );
+      if (!res.ok) throw new Error("Failed to create invoice");
+
       const data = await res.json();
-      if (data.paid) {
-        setStatus("✅ Payment received!");
-        clearInterval(interval);
+      setQrImage(`data:image/png;base64,${data.qr_image}`);
+      setInvoiceId(data.invoice_id);
+      setStatus("⌛ Waiting for payment...");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error("Create payment error:", err.message);
+      setStatus("❌ Failed to create payment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!invoiceId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/qpay/check`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ invoiceId }),
+          }
+        );
+        if (!res.ok) throw new Error("Failed to check payment");
+
+        const data = await res.json();
+        if (data.paid) {
+          setStatus("✅ Payment received!");
+          clearInterval(interval);
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        console.error("Check payment error:", err.message);
       }
     }, 5000);
+
     return () => clearInterval(interval);
   }, [invoiceId]);
 
@@ -56,8 +74,9 @@ export default function QPayPage() {
       <button
         onClick={createPayment}
         className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+        disabled={loading}
       >
-        Pay 10,000₮
+        {loading ? "Processing..." : "Pay 10,000₮"}
       </button>
 
       {qrImage && (
@@ -66,6 +85,8 @@ export default function QPayPage() {
           {status && <p className="mt-3 text-lg">{status}</p>}
         </>
       )}
+
+      {!qrImage && status && <p className="mt-3 text-lg">{status}</p>}
     </div>
   );
 }
