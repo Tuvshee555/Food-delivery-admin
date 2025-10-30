@@ -51,11 +51,14 @@ export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
         const token = response.authResponse.accessToken;
 
         try {
-          const res = await fetch("http://localhost:4000/user/auth/facebook", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token, role }),
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/auth/facebook`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ token, role }),
+            }
+          );
 
           const data = await res.json();
 

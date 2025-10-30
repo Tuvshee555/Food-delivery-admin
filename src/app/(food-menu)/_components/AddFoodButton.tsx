@@ -10,7 +10,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
   category,
   refreshFood,
 }) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -28,7 +28,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
 
       {open && (
         <AddFoodModel
-          category={category}
+          category={category} // now matches type
           closeModal={() => setOpen(false)}
           refreshFood={refreshFood}
         />

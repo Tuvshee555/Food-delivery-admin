@@ -1,37 +1,32 @@
-import { FoodType } from "@/type/type";
-import { AddFoodButton } from "./AddFoodButton";
 import { FoodCard } from "./FoodCard";
+import { AddFoodButton } from "./AddFoodButton";
+import { FoodCategoryListPropsType } from "@/type/type";
 
-type FoodCategoryProps = {
-  category: { _id: string; categoryName: string };
-  foodData: FoodType[];
-  refreshFood: () => void;
-};
-
-export const FoodCategoryList = ({
+export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
   category,
   foodData,
   refreshFood,
-}: FoodCategoryProps) => {
-  const filteredFood = foodData.filter(
-    (dish) => dish.category === category._id
-  );
+}) => {
+  const categoryId = category._id || category.id;
+  const foodsInCategory = foodData.filter((f) => f.categoryId === categoryId);
 
   return (
     <div className="flex flex-col gap-4 bg-white rounded-md p-5">
-      <h2 className="text-2xl font-semibold">
-        {category.categoryName}{" "}
-        <span className="text-gray-500">({filteredFood.length})</span>
+      {/* Category Name */}
+      <h2 className="text-lg font-bold">
+        {category.categoryName} ({foodsInCategory.length})
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {/* Food Cards */}
+      <div className="flex gap-4 flex-wrap">
+        {/* Add Food Button */}
         <AddFoodButton category={category} refreshFood={refreshFood} />
-        {filteredFood.map((dish) => (
+        {foodsInCategory.map((food) => (
           <FoodCard
-            key={dish._id}
-            food={dish}
-            refreshFood={refreshFood}
+            key={food.id}
+            food={food}
             category={category}
+            refreshFood={refreshFood}
           />
         ))}
       </div>

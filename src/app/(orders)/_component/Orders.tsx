@@ -34,7 +34,9 @@ export const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/order");
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order`
+        );
         setOrders(response.data);
         console.log(response.data, "orders");
       } catch (error) {
@@ -52,7 +54,7 @@ export const Orders = () => {
 
   const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
     try {
-      await axios.patch(`http://localhost:4000/order/${id}`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/${id}`, {
         status: newStatus,
       });
       setOrders((prev) =>

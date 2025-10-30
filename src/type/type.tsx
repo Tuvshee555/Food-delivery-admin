@@ -1,6 +1,8 @@
-import React from "react";
+import React, { Key } from "react";
 
 export type FoodType = {
+  id: Key | null | undefined;
+  categoryId: string;
   _id: string;
   foodName: string;
   price: string;
@@ -26,7 +28,11 @@ export type FoodData = {
 };
 
 export type FoodModelProps = {
-  category: { _id: string; categoryName: string };
+  category: {
+    id: string;
+    _id: string;
+    categoryName: string;
+  };
   closeModal: () => void;
   refreshFood: () => void;
 };
@@ -81,4 +87,14 @@ export type UserType = {
   nextStep: () => void;
   stepBack: () => void;
   user: User;
+};
+
+export type FoodCategoryListPropsType = {
+  category: {
+    _id: string;
+    id?: string; // optional in case some categories use `id`
+    categoryName: string;
+  };
+  foodData: FoodType[];
+  refreshFood: () => void;
 };

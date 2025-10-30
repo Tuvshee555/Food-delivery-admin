@@ -13,7 +13,9 @@ export const FoodMenu = () => {
   const getData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:4000/category");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`
+      );
       setCategory(response.data);
       console.log(response.data);
     } catch (error) {
@@ -31,7 +33,10 @@ export const FoodMenu = () => {
     if (!newCategory.categoryName.trim()) return;
     try {
       setLoading(true);
-      await axios.post("http://localhost:4000/category", newCategory);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`,
+        newCategory
+      );
       setNewCategory({ categoryName: "" });
       getData();
     } catch (error) {

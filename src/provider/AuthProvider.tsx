@@ -19,7 +19,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const { decodedToken, reEvaluateToken, isExpired } = useJwt<UserType>(
     token || ""
   );
@@ -29,7 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (!storedToken) {
       router.push("/log-in");
-      setLoading(false);
+
       return;
     }
 
@@ -42,7 +41,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       router.push("/log-in");
     }
 
-    setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -57,9 +55,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       router.push("/log-in"); // ⚠️ Added: redirect on logout
     }
   };
-
-  // Prevent children from flashing before redirect
-  if (loading) return <div>Loading...</div>;
 
   return (
     <AuthContext.Provider

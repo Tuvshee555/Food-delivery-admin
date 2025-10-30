@@ -1,11 +1,17 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import { useState, ChangeEvent } from "react";
-import { uploadImage } from "@/utils/UploadImage";
 import axios from "axios";
-import { FoodData, FoodModelProps } from "@/type/type";
-import { toast } from "sonner";
 import { X } from "lucide-react";
+import { toast } from "sonner";
+import { uploadImage } from "@/utils/UploadImage";
+import { FoodData } from "@/type/type";
+
+interface FoodModelProps {
+  category: { _id: string; categoryName: string };
+  closeModal: () => void;
+  refreshFood: () => void;
+}
 
 export const AddFoodModel: React.FC<FoodModelProps> = ({
   category,
@@ -17,13 +23,14 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     price: "",
     ingredients: "",
     image: null,
-    category: category._id,
+    category: category._id, // <-- ensures categoryId is set
   });
+
   const [photo, setPhoto] = useState<string | undefined>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLImageElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
@@ -33,18 +40,15 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     }));
 
     if (files) {
-      const file = files[0];
       const reader = new FileReader();
-      reader.onload = () => {
-        setPhoto(reader?.result as string);
-        setLoading(false);
-      };
-      reader.readAsDataURL(file);
+      reader.onload = () => setPhoto(reader.result as string);
+      reader.readAsDataURL(files[0]);
     }
   };
 
   const removePhoto = () => {
-    setPhoto("");
+    setPhoto(undefined);
+    setFoodData((prev) => ({ ...prev, image: null }));
   };
 
   const addFood = async () => {
@@ -57,26 +61,25 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       setLoading(true);
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
 
-      const res = await axios.post("http://localhost:4000/food", {
+      await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`, {
         foodName: foodData.foodName,
         price: foodData.price,
         ingredients: foodData.ingredients,
         image: imageUrl,
-        category: foodData.category,
+        categoryId: foodData.category, // this is _id from category
       });
 
-      console.log(res);
-
+      toast("Successfully added food");
       setFoodData({
         foodName: "",
         price: "",
         ingredients: "",
         image: null,
-        category: "",
+        category: category._id,
       });
-      refreshFood();
-      closeModal(); // Close modal after adding food
-      toast("Successfully added food");
+      setPhoto(undefined);
+      refreshFood(); // immediately updates list
+      closeModal();
     } catch (error) {
       console.error("Error adding food:", error);
       toast.error("Failed to add food");
@@ -86,7 +89,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 position-absolute z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-lg w-[480px] shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">
@@ -102,7 +105,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
 
         <div className="grid gap-4">
           <div className="flex w-full gap-3 justify-between">
-            <div className="gap-2 flex flex-col w-full">
+            <div className="flex flex-col w-full gap-2">
               <label className="text-sm font-medium">Food Name</label>
               <input
                 name="foodName"
@@ -113,7 +116,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
               />
             </div>
 
-            <div className="gap-2 flex flex-col w-full">
+            <div className="flex flex-col w-full gap-2">
               <label className="text-sm font-medium">Food Price</label>
               <input
                 name="price"
@@ -122,13 +125,11 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={foodData.price}
                 onChange={handleChange}
-                inputMode="numeric"
-                pattern="[0-9]*"
               />
             </div>
           </div>
 
-          <div className="gap-2 flex flex-col">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Ingredients</label>
             <textarea
               name="ingredients"
@@ -140,18 +141,18 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
             />
           </div>
 
-          <div className="gap-2 flex flex-col">
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Food Image</label>
-            {foodData?.image && photo ? (
+            {foodData.image && photo ? (
               <div className="relative">
                 <img
-                  className="h-[138px] w-full rounded-xl bg-[red] object-fit"
+                  className="h-[138px] w-full rounded-xl object-cover"
                   src={photo}
                 />
                 <X
-                  className="absolute h-[20px] w-[20px] align-center flex justify-center bg-black text-[white] right-2 top-2 rounded-full"
-                  onClick={() => removePhoto()}
-                ></X>
+                  className="absolute h-[20px] w-[20px] right-2 top-2 bg-black text-white rounded-full cursor-pointer"
+                  onClick={removePhoto}
+                />
               </div>
             ) : (
               <div className="border border-dashed rounded-md flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100">
@@ -163,10 +164,11 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
                   id="fileUpload"
                   onChange={handleChange}
                 />
-                <label htmlFor="fileUpload" className="cursor-pointer p-[50px]">
-                  <span className="text-center">
-                    Choose a file or drag & drop it here
-                  </span>
+                <label
+                  htmlFor="fileUpload"
+                  className="p-[50px] cursor-pointer text-center"
+                >
+                  Choose a file or drag & drop it here
                 </label>
               </div>
             )}

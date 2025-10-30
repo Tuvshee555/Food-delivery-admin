@@ -8,7 +8,7 @@ export const useCa = () => {
   const postData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/category",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`,
         category
       );
       toast("So easy added category");
