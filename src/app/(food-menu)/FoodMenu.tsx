@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { AddCategoryButton } from "./_components/AddCategoryButton";
 import { CategoryNameList } from "./_components/CategoryNameList";
-import { Datas } from "@/type/type";
+// import { Datas } from "@/type/type";
 import { CategoriesFoods } from "./_features/CategoriesFoods";
 
 export const FoodMenu = () => {
-  const [category, setCategory] = useState<Datas[]>([]);
+  const [category, setCategory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [newCategory, setNewCategory] = useState({ categoryName: "" });
 
