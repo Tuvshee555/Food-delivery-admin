@@ -1,167 +1,208 @@
 /* eslint-disable @next/next/no-img-element */
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  ChevronRight as NextIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
+/* ---------- TYPES ---------- */
 type FoodItem = {
-  foodId: {
-    _id: string;
-    name: string;
-    image: string;
-  };
+  food: any;
+  foodId: { id: string; foodName: string; image: string };
   quantity: number;
 };
 
 type Order = {
-  _id: string;
+  id: string;
   createdAt: string;
   status: "PENDING" | "DELIVERED" | "CANCELLED";
-  totalprice: number;
-  user: {
-    email: string;
-    address: string;
-  };
+  totalPrice: number;
+  user: { email: string; address: string };
   foodOrderItems: FoodItem[];
 };
 
+/* ---------- HOOK ---------- */
 export const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Fetch orders from backend
+  /* ---- real pagination ---- */
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10); // keep it fixed for simplicity
+  const [total, setTotal] = useState(0);
+
+  /* ---- fetch ---- */
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order`
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order`,
+          { params: { page, limit } }
         );
-        setOrders(response.data);
-        console.log(response.data, "orders");
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+
+        // adapt to either response style
+        if (Array.isArray(data)) {
+          setOrders(data);
+          setTotal(data.length);
+        } else {
+          setOrders(data.orders || []);
+          setTotal(data.total || 0);
+        }
+      } catch (e) {
+        console.error("Error fetching orders:", e);
+        setOrders([]);
       }
     };
     fetchOrders();
-  }, []);
+  }, [page, limit]);
 
-  const toggleRow = (id: string) => {
-    setExpandedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    );
-  };
+  /* ---- helpers ---- */
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
-  const handleStatusChange = async (id: string, newStatus: Order["status"]) => {
+  const changeStatus = async (id: string, status: Order["status"]) => {
     try {
       await axios.patch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/${id}`, {
-        status: newStatus,
+        status,
       });
       setOrders((prev) =>
-        prev.map((order) =>
-          order._id === id ? { ...order, status: newStatus } : order
-        )
+        prev.map((o) => (o.id === id ? { ...o, status } : o))
       );
-    } catch (err) {
-      console.error("Failed to update order status:", err);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const getStatusColor = (status: Order["status"]) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700";
-      case "DELIVERED":
-        return "bg-green-100 text-green-700";
-      case "CANCELLED":
-        return "bg-red-100 text-red-700";
-      default:
-        return "";
-    }
-  };
+  const totalPages = Math.ceil(total / limit);
 
+  /* ---------- RENDER ---------- */
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md w-[800px]">
-      <h2 className="text-xl font-semibold mb-4">Orders</h2>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Orders</h1>
 
-      <div className="flex flex-col gap-4">
-        {orders.map((order, index) => (
-          <div key={order._id} className="border rounded-md p-4 bg-gray-50">
-            <div className="flex justify-between items-center">
-              <div className="flex gap-4 items-center">
-                <span className="font-semibold">{index + 1}.</span>
-                <span>{order.user.email}</span>
-                <Button
-                  variant="ghost"
-                  className="flex items-center"
-                  onClick={() => toggleRow(order._id)}
-                >
-                  {order.foodOrderItems.length} foods
-                  {expandedRows.includes(order._id) ? (
-                    <ChevronDown size={16} className="ml-2" />
-                  ) : (
-                    <ChevronRight size={16} className="ml-2" />
-                  )}
-                </Button>
-              </div>
-              <div className="flex gap-4 items-center">
-                <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                <span>${order.totalprice}</span>
-                <span className="truncate max-w-[150px]">
-                  {order.user.address}
-                </span>
-                <select
-                  value={order.status}
-                  onChange={(e) =>
-                    handleStatusChange(
-                      order._id,
-                      e.target.value as Order["status"]
-                    )
-                  }
-                  className={`text-sm px-2 py-1 rounded-md font-medium ${getStatusColor(
-                    order.status
-                  )}`}
-                >
-                  <option value="PENDING">PENDING</option>
-                  <option value="DELIVERED">DELIVERED</option>
-                  <option value="CANCELLED">CANCELLED</option>
-                </select>
-              </div>
-            </div>
-
-            {expandedRows.includes(order._id) && (
-              <div className="flex flex-wrap gap-4 mt-4">
-                {order.foodOrderItems.map((item, idx) => (
-                  <div
-                    key={`${order._id}-${item.foodId._id}-${idx}`} // ✅ unique even for duplicates
-                    className="flex flex-col items-center gap-1 w-20"
+        {/* cards */}
+        <div className="grid gap-4">
+          {orders.map((o, idx) => (
+            <section
+              key={o.id}
+              className="rounded-xl bg-white shadow-sm border border-gray-100 p-4 hover:shadow-md transition"
+            >
+              {/* header row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-400">
+                    #{idx + 1 + (page - 1) * limit}
+                  </span>
+                  <span className="text-sm text-gray-700 font-medium">
+                    {o.user.email}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggle(o.id)}
+                    className="gap-1 text-gray-500"
                   >
-                    <img
-                      src={item.foodId.image}
-                      alt={item.foodId.name}
-                      className="w-16 h-16 rounded-md object-cover"
-                    />
-                    <span className="text-xs text-center">
-                      {item.foodId.name}
-                    </span>
-                    <span className="text-gray-500 text-xs">
-                      x {item.quantity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+                    {o.foodOrderItems.length} items
+                    {expanded.has(o.id) ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
 
-      {/* Pagination (hardcoded for now) */}
-      <div className="flex justify-end mt-4 gap-2">
-        <Button variant="ghost">Previous</Button>
-        <Button variant="ghost">1</Button>
-        <Button variant="ghost">2</Button>
-        <Button variant="ghost">3</Button>
-        <Button variant="ghost">Next</Button>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-500">
+                    {new Date(o.createdAt).toLocaleDateString()}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-800">
+                    ${o.totalPrice.toFixed(2)}
+                  </span>
+                  <span className="text-sm text-gray-600 max-w-[160px] truncate">
+                    {o.user.address}
+                  </span>
+
+                  <select
+                    value={o.status}
+                    onChange={(e) =>
+                      changeStatus(o.id, e.target.value as Order["status"])
+                    }
+                    className={`px-3 py-1 text-xs rounded-full border font-medium
+                      ${
+                        o.status === "PENDING"
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : o.status === "DELIVERED"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border-rose-200"
+                      }`}
+                  >
+                    <option>PENDING</option>
+                    <option>DELIVERED</option>
+                    <option>CANCELLED</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* expanded items */}
+              {expanded.has(o.id) && (
+                <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-100">
+                  {o.foodOrderItems.map((item, index) => (
+                    <div
+                      key={`${o.id}-${item.food.id}-${index}`}
+                      className="w-20 text-center"
+                    >
+                      <img
+                        src={item.food.image}
+                        alt={item.food.foodName}
+                        className="w-16 h-16 object-cover rounded-lg mx-auto"
+                      />
+                      <p className="text-sm mt-1">{item.food.foodName}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+
+        {/* real pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 text-sm">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" /> Previous
+            </Button>
+
+            <span className="text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="gap-1"
+            >
+              Next <NextIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
