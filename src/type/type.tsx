@@ -38,6 +38,7 @@ export type FoodModelProps = {
 };
 
 export type CategoryType = {
+  id: string;
   categoryName: string;
   _id: string;
   foodCount: number;

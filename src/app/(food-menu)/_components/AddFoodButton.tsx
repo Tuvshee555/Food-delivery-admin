@@ -2,7 +2,10 @@ import { useState } from "react";
 import { AddFoodModel } from "./AddFoodModel";
 
 interface AddFoodButtonProps {
-  category: { _id: string; categoryName: string };
+  category: {
+    id: string; // ONLY use id
+    categoryName: string;
+  };
   refreshFood: () => void;
 }
 
@@ -28,7 +31,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
 
       {open && (
         <AddFoodModel
-          category={category} // now matches type
+          category={category} // pass only id
           closeModal={() => setOpen(false)}
           refreshFood={refreshFood}
         />

@@ -4,11 +4,11 @@ import { useState, ChangeEvent } from "react";
 import axios from "axios";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import { uploadImage } from "@/utils/UploadImage";
+import { uploadImage } from "@/utils/UploadImage"; // your existing upload function
 import { FoodData } from "@/type/type";
 
 interface FoodModelProps {
-  category: { _id: string; categoryName: string };
+  category: { id: string; categoryName: string }; // ONLY use id
   closeModal: () => void;
   refreshFood: () => void;
 }
@@ -23,11 +23,11 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     price: "",
     ingredients: "",
     image: null,
-    category: category._id, // <-- ensures categoryId is set
+    category: category.id, // use id
   });
 
   const [photo, setPhoto] = useState<string | undefined>();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -39,7 +39,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       [name]: name === "image" && files ? files[0] : value,
     }));
 
-    if (files) {
+    if (files && files[0]) {
       const reader = new FileReader();
       reader.onload = () => setPhoto(reader.result as string);
       reader.readAsDataURL(files[0]);
@@ -52,33 +52,40 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   };
 
   const addFood = async () => {
+    // Require all fields including category
     if (!foodData.foodName || !foodData.price || !foodData.ingredients) {
       toast.error("Please fill all fields.");
       return;
     }
 
+    if (!foodData.category) {
+      toast.error("Please select a category.");
+      return;
+    }
+
     try {
       setLoading(true);
+
       const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
 
       await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`, {
         foodName: foodData.foodName,
-        price: foodData.price,
+        price: Number(foodData.price),
         ingredients: foodData.ingredients,
         image: imageUrl,
-        categoryId: foodData.category, // this is _id from category
+        categoryId: foodData.category, // send id
       });
 
-      toast("Successfully added food");
+      toast.success("Successfully added food");
       setFoodData({
         foodName: "",
         price: "",
         ingredients: "",
         image: null,
-        category: category._id,
+        category: category.id,
       });
       setPhoto(undefined);
-      refreshFood(); // immediately updates list
+      refreshFood();
       closeModal();
     } catch (error) {
       console.error("Error adding food:", error);
