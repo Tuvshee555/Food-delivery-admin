@@ -1,6 +1,12 @@
+/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
+import React, { useState, ChangeEvent } from "react";
+import axios from "axios";
+import { FoodCardPropsType, FoodType } from "@/type/type";
+import { SelectCategory } from "./SelectCategory";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Trash, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,21 +15,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import axios from "axios";
-import { ChangeEvent, useState } from "react";
-import { FoodCardPropsType, FoodType } from "../../../type/type";
-import { Trash, Pencil } from "lucide-react";
-import { SelectCategory } from "./SelectCategory";
-import { toast } from "sonner";
 
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
 }) => {
+  // const [updatedFood, setUpdatedFood] = useState<FoodType>({ ...food });
   const [updatedFood, setUpdatedFood] = useState<FoodType>({
-    ...food,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    _id: food._id || (food as any).id, // fallback to id
+    id: food.id,
+    foodName: food.foodName || "",
+    price: food.price || "",
+    ingredients: food.ingredients || "",
+    image: food.image,
+    category: food.category || "",
+    categoryId: food.categoryId || "",
+    foodData: [],
+    categories: "",
   });
 
   const [photo, setPhoto] = useState<string | undefined>(
@@ -31,6 +38,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   );
   const [loading, setLoading] = useState(false);
 
+  // Handles inputs, textarea, and category select
   const handleChange = (
     e:
       | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -40,9 +48,10 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
       const target = e.target;
 
       if (target instanceof HTMLInputElement) {
-        const { name, value, files } = target;
+        const { name, value } = target;
+        const files = target.files;
 
-        if (name === "image" && files?.length) {
+        if (name === "image" && files && files.length > 0) {
           const file = files[0];
           setUpdatedFood((prev) => ({ ...prev, image: file }));
 
@@ -58,11 +67,12 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
         setUpdatedFood((prev) => ({ ...prev, [name]: value }));
       }
     } else {
-      // for select category
+      // Category selection
       setUpdatedFood((prev) => ({ ...prev, category: e.value }));
     }
   };
 
+  // Upload image to Cloudinary
   const uploadImage = async (file: File) => {
     try {
       const formData = new FormData();
@@ -73,22 +83,16 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
         formData
       );
       return data.secure_url;
-    } catch (error) {
-      console.error("Error uploading image:", error);
+    } catch (err) {
+      console.error("Image upload error:", err);
       return "";
     }
   };
 
+  // Update food API call
   const updateData = async () => {
-    if (!updatedFood._id) {
-      toast.error("Food ID is missing. Cannot update.");
-      return;
-    }
-
-    if (!updatedFood.category || typeof updatedFood.category !== "string") {
-      toast.error("Please select a valid category.");
-      return;
-    }
+    if (!updatedFood.id) return toast.error("Food ID missing");
+    if (!updatedFood.category) return toast.error("Please select a category");
 
     try {
       setLoading(true);
@@ -98,43 +102,39 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
           ? await uploadImage(updatedFood.image)
           : updatedFood.image;
 
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`,
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`,
         {
-          _id: updatedFood._id, // now guaranteed to exist
-          foodName: updatedFood.foodName,
-          price: Number(updatedFood.price),
-          ingredients: updatedFood.ingredients,
+          foodName: updatedFood.foodName || "",
+          price: Number(updatedFood.price) || 0,
+          ingredients: updatedFood.ingredients || "",
           image: imageUrl,
           categoryId: updatedFood.category,
         }
       );
 
-      setUpdatedFood(response.data);
       toast.success("Food updated successfully");
       refreshFood();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(
-        "Error updating food:",
-        error.response?.data || error.message
-      );
-      toast.error(error.response?.data?.message || "Failed to update food");
+    } catch (err) {
+      console.error("Update error:", err);
+      toast.error("Failed to update food front end");
     } finally {
       setLoading(false);
     }
   };
 
+  // Delete food API call
   const deleteFood = async () => {
+    if (!updatedFood.id) return toast.error("Food ID missing");
     try {
       setLoading(true);
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${food._id}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`
       );
-      toast("Successfully deleted food");
+      toast.success("Food deleted");
       refreshFood();
-    } catch (error) {
-      console.error("Delete error:", error);
+    } catch (err) {
+      console.error("Delete error:", err);
       toast.error("Failed to delete food");
     } finally {
       setLoading(false);
@@ -144,10 +144,11 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="absolute bottom-2 z-10 right-2 h-11 w-11 flex items-center justify-center rounded-full bg-white hover:cursor-pointer">
+        <div className="absolute bottom-2 right-2 h-11 w-11 flex items-center justify-center bg-white rounded-full cursor-pointer hover:shadow-md">
           <Pencil className="text-red-500 h-5 w-5" />
         </div>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
           <DialogTitle>Dish Info</DialogTitle>
@@ -155,87 +156,65 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
 
         <div className="grid gap-4 py-4">
           {/* Dish Name */}
-          <div className="grid grid-cols-4 items-center gap-4 border rounded-md px-2 py-1">
-            <label htmlFor="foodName" className="text-right">
-              Dish Name
-            </label>
-            <Input
-              id="foodName"
-              name="foodName"
-              className="col-span-3"
-              value={updatedFood.foodName}
-              onChange={handleChange}
-            />
-          </div>
+          <input
+            name="foodName"
+            value={updatedFood.foodName}
+            onChange={handleChange}
+            placeholder="Dish Name"
+            className="border p-2 rounded-md"
+          />
 
-          {/* Category */}
-          <div className="grid grid-cols-4 items-center gap-4 border rounded-md px-2 py-1">
-            <label className="text-right">Category</label>
-            <div className="col-span-3">
-              <SelectCategory
-                updatedFood={updatedFood}
-                handleChange={handleChange}
-              />
-            </div>
-          </div>
+          {/* Category Select */}
+          <SelectCategory
+            handleChange={handleChange}
+            updatedFood={updatedFood}
+          />
 
           {/* Ingredients */}
-          <div className="grid grid-cols-4 items-center gap-4 border rounded-md px-2 py-1">
-            <label htmlFor="ingredients" className="text-right">
-              Ingredients
-            </label>
-            <textarea
-              id="ingredients"
-              name="ingredients"
-              className="col-span-3"
-              value={updatedFood.ingredients}
-              onChange={handleChange}
-            />
-          </div>
+          <textarea
+            name="ingredients"
+            value={updatedFood.ingredients || ""}
+            onChange={handleChange}
+            placeholder="Ingredients"
+            className="border p-2 rounded-md"
+          />
 
           {/* Price */}
-          <div className="grid grid-cols-4 items-center gap-4 border rounded-md px-2 py-1">
-            <label htmlFor="price" className="text-right">
-              Price
-            </label>
-            <Input
-              id="price"
-              name="price"
-              className="col-span-3"
-              value={updatedFood.price}
-              onChange={handleChange}
-            />
-          </div>
+          <input
+            type="number"
+            name="price"
+            value={updatedFood.price}
+            onChange={handleChange}
+            placeholder="Price"
+            className="border p-2 rounded-md"
+          />
 
           {/* Image */}
-          <div className="border rounded-md p-2 flex flex-col items-center">
-            <label htmlFor="image" className="text-right">
-              Image
-            </label>
-            {photo ? (
+          <div>
+            {photo && (
               <img
-                className="h-[138px] w-[412px] object-cover"
                 src={photo}
-                alt="Preview"
+                className="h-[138px] w-full object-cover rounded-md mb-2"
               />
-            ) : (
-              <span className="text-gray-500">No image selected</span>
             )}
-            <Input
+            <input
               type="file"
               name="image"
               accept="image/*"
-              id="fileUpload"
               onChange={handleChange}
             />
           </div>
         </div>
 
-        <DialogFooter>
-          <Button type="button" onClick={updateData} disabled={loading}>
-            {loading ? "Saving..." : "Save changes"}
+        <DialogFooter className="flex justify-between">
+          <Button onClick={updateData} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
           </Button>
-          <Button type="button" onClick={deleteFood} disabled={loading}>
+          <Button
+            onClick={deleteFood}
+            disabled={loading}
+            className="bg-red-500 text-white"
+          >
             <Trash />
           </Button>
         </DialogFooter>
