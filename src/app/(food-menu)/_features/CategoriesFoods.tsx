@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FoodCategoryList } from "../_components/FoodCategoryList";
-import { CategoriesProps, FoodType } from "@/type/type";
+import { FoodType, CategoryType } from "@/type/type";
 
-export const CategoriesFoods = ({ category }: CategoriesProps) => {
+type CategoriesFoodsProps = {
+  category: CategoryType[]; // type the category prop
+};
+
+export const CategoriesFoods: React.FC<CategoriesFoodsProps> = ({
+  category,
+}) => {
   const [foodData, setFoodData] = useState<FoodType[]>([]);
 
   // Normalize backend food data for frontend
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizeFood = (food: any): FoodType => ({
     ...food,
     _id: food.id, // frontend expects _id
     category: food.category || food.categoryId, // fallback if category is null
+    foodData: [],
+    categories: "",
   });
 
   // Fetch all foods
@@ -41,7 +48,7 @@ export const CategoriesFoods = ({ category }: CategoriesProps) => {
     <div className="w-full flex flex-col gap-[24px] mt-[20px]">
       {category.map((e) => (
         <FoodCategoryList
-          key={e._id || e.id} // avoid React key warnings
+          key={e.id} // use id as key
           category={e}
           foodData={foodData}
           refreshFood={refreshFood}

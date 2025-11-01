@@ -1,6 +1,8 @@
 import { Key } from "react";
 
-// Food type
+// -------------------- FOOD TYPES --------------------
+
+// Represents a single food item
 export type FoodType = {
   id: Key | null | undefined;
   categoryId: string;
@@ -13,13 +15,14 @@ export type FoodType = {
   categories: string;
 };
 
-// Props for Food Card
+// Props for FoodCard component
 export type FoodCardPropsType = {
   food: FoodType;
   refreshFood: () => void;
+  category?: CategoryType;
 };
 
-// Props for AddFood modal
+// Props for AddFood modal/component
 export type FoodData = {
   foodName: string;
   price: string;
@@ -28,6 +31,7 @@ export type FoodData = {
   category: string;
 };
 
+// Props for FoodModel (add/edit food modal)
 export type FoodModelProps = {
   category: {
     id: string;
@@ -37,19 +41,31 @@ export type FoodModelProps = {
   refreshFood: () => void;
 };
 
-// Category type
+// Props for FoodCategoryList component
+export type FoodCategoryListPropsType = {
+  category: CategoryType & { _id?: string }; // support _id from backend if exists
+  foodData: FoodType[];
+  refreshFood: () => void;
+};
+
+// -------------------- CATEGORY TYPES --------------------
+
+// Represents a single category
 export type CategoryType = {
-  id: string; // use only id
+  id: string;
   categoryName: string;
   foodCount: number;
 };
 
-// Props for SelectCategory
+// Props for SelectCategory component
 export type SelectCategoryProps = {
   handleChange: (e: { name: string; value: string }) => void;
   updatedFood?: FoodType;
 };
 
+// -------------------- USER TYPES --------------------
+
+// Represents a user object
 export type User = {
   email: string;
   password: string;
@@ -57,10 +73,23 @@ export type User = {
   role?: string;
 };
 
-// props for CreatePassword
+// Props for CreatePassword step/component
 export type UserType = {
   setUser: React.Dispatch<React.SetStateAction<User>>;
   nextStep: () => void;
   stepBack: () => void;
   user: User;
+};
+
+export type SignUpEmailStepType = {
+  nextStep: () => void;
+  stepBack?: () => void;
+  setUser: React.Dispatch<React.SetStateAction<User>>; // use User type
+  user: User; // use full User type
+};
+
+export type Datas = {
+  categoryName: string;
+  _id: string;
+  foodCount: number;
 };

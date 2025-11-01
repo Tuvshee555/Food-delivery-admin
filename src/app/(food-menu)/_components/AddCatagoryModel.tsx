@@ -41,7 +41,10 @@ export const AddCategoryModal = () => {
                 className="col-span-3 border p-2 rounded"
                 value={category.username} // Assuming category has 'username'
                 onChange={(e) =>
-                  setCategory((prev) => ({ ...prev, username: e.target.value }))
+                  setCategory((prev: any) => ({
+                    ...prev,
+                    username: e.target.value,
+                  }))
                 }
               />
             </div>
