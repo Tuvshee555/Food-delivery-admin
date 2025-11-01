@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, ChangeEvent } from "react";
 import axios from "axios";
@@ -27,8 +26,8 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
     price: food.price || "",
     ingredients: food.ingredients || "",
     image: food.image,
-    category: food.category || "",
-    categoryId: food.categoryId || "",
+    category: food.categoryId || "", // category stores selected category ID
+    categoryId: food.categoryId || "", // this satisfies the FoodType definition
     foodData: [],
     categories: "",
   });
@@ -92,7 +91,6 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   // Update food API call
   const updateData = async () => {
     if (!updatedFood.id) return toast.error("Food ID missing");
-    if (!updatedFood.category) return toast.error("Please select a category");
 
     try {
       setLoading(true);
@@ -102,6 +100,9 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
           ? await uploadImage(updatedFood.image)
           : updatedFood.image;
 
+      // If category not changed, use the old one
+      const finalCategory = updatedFood.category || food.categoryId;
+
       await axios.put(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`,
         {
@@ -109,7 +110,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
           price: Number(updatedFood.price) || 0,
           ingredients: updatedFood.ingredients || "",
           image: imageUrl,
-          categoryId: updatedFood.category,
+          categoryId: finalCategory,
         }
       );
 
@@ -117,7 +118,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
       refreshFood();
     } catch (err) {
       console.error("Update error:", err);
-      toast.error("Failed to update food front end");
+      toast.error("Failed to update food");
     } finally {
       setLoading(false);
     }
@@ -190,18 +191,54 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
           />
 
           {/* Image */}
-          <div>
-            {photo && (
-              <img
-                src={photo}
-                className="h-[138px] w-full object-cover rounded-md mb-2"
-              />
-            )}
+          <div className="flex flex-col items-center justify-center w-full">
+            <label
+              htmlFor="imageUpload"
+              className="relative w-full h-40 rounded-xl overflow-hidden cursor-pointer group"
+            >
+              {photo ? (
+                <>
+                  <img
+                    src={photo}
+                    alt="Preview"
+                    className="h-full w-full object-cover transition-all duration-300 group-hover:brightness-75"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition">
+                    <span className="text-white text-sm font-medium">
+                      Click to replace image
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-red-400 hover:bg-red-50 transition">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-10 h-10 text-gray-400 mb-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16l4-4m0 0l4 4m-4-4v12M13 8h8m0 0v8m0-8l-8 8"
+                    />
+                  </svg>
+                  <p className="text-sm text-gray-500 font-medium">
+                    Click to upload image
+                  </p>
+                </div>
+              )}
+            </label>
+
             <input
+              id="imageUpload"
               type="file"
               name="image"
               accept="image/*"
               onChange={handleChange}
+              className="hidden"
             />
           </div>
         </div>
