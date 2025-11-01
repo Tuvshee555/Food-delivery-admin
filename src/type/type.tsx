@@ -89,6 +89,7 @@ export type SignUpEmailStepType = {
 };
 
 export type Datas = {
+  username: string | number | readonly string[] | undefined;
   categoryName: string;
   _id: string;
   foodCount: number;
