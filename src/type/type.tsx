@@ -49,3 +49,18 @@ export type SelectCategoryProps = {
   handleChange: (e: { name: string; value: string }) => void;
   updatedFood?: FoodType;
 };
+
+export type User = {
+  email: string;
+  password: string;
+  repassword: string;
+  role?: string;
+};
+
+// props for CreatePassword
+export type UserType = {
+  setUser: React.Dispatch<React.SetStateAction<User>>;
+  nextStep: () => void;
+  stepBack: () => void;
+  user: User;
+};
