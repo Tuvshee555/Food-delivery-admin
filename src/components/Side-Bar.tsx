@@ -45,6 +45,16 @@ export const Sidebar = ({ setPage }: { setPage: (value: string) => void }) => {
           >
             Orders
           </Button>
+          <Button
+            onClick={() => handleClick("Revenue-dashboard")}
+            className={
+              activePage === "Revenue-dashboard"
+                ? "bg-blue-500 text-white rounded-[6px]"
+                : "rounded-[6px]"
+            }
+          >
+            Revenue dashboard
+          </Button>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ export default function QPayPage() {
   const [loading, setLoading] = useState(false);
   const [paid, setPaid] = useState(false);
 
-  const createPayment = async (amount = 10000) => {
+  const createPayment = async (amount = 100) => {
     setLoading(true);
     setStatus("");
     setPaid(false);
@@ -77,11 +77,11 @@ export default function QPayPage() {
       <h1 className="text-2xl font-bold">QPay Integration</h1>
 
       <button
-        onClick={() => createPayment(10000)}
+        onClick={() => createPayment(100)}
         className="bg-blue-600 text-white px-6 py-3 rounded-lg disabled:opacity-50 transition-all hover:bg-blue-700"
         disabled={loading || !!invoiceId}
       >
-        {loading ? "Processing..." : paid ? "Paid ✅" : "Pay 10,000₮"}
+        {loading ? "Processing..." : paid ? "Paid ✅" : "Pay 100₮"}
       </button>
 
       {qrImage && (
