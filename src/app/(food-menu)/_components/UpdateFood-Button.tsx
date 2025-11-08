@@ -5,7 +5,7 @@ import { FoodCardPropsType, FoodType } from "@/type/type";
 import { SelectCategory } from "./SelectCategory";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Trash, Pencil } from "lucide-react";
+import { Trash, Pencil, X, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,246 +13,319 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import { uploadImage } from "@/utils/UploadImage";
 
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
 }) => {
-  // const [updatedFood, setUpdatedFood] = useState<FoodType>({ ...food });
   const [updatedFood, setUpdatedFood] = useState<FoodType>({
     id: food.id,
     foodName: food.foodName || "",
     price: food.price || "",
     ingredients: food.ingredients || "",
     image: food.image,
-    category: food.categoryId || "", // category stores selected category ID
-    categoryId: food.categoryId || "", // this satisfies the FoodType definition
-    foodData: [],
-    categories: "",
+    categoryId: food.categoryId || "",
+    video: food.video || "",
+    sizes: food.sizes || [],
+    extraImages: food.extraImages || [],
   });
 
-  const [photo, setPhoto] = useState<string | undefined>(
-    typeof food.image === "string" ? food.image : undefined
+  // media & UI states
+  const [mainPreview, setMainPreview] = useState<string>(
+    typeof food.image === "string" ? food.image : ""
   );
+  const [extraPreviews, setExtraPreviews] = useState<string[]>(
+    Array.isArray(food.extraImages)
+      ? food.extraImages.filter((i): i is string => typeof i === "string")
+      : []
+  );
+  const [extraFiles, setExtraFiles] = useState<File[]>([]);
+  const [videoPreview, setVideoPreview] = useState<string>(
+    typeof food.video === "string" ? food.video : ""
+  );
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [sizes, setSizes] = useState<string[]>(
+    Array.isArray(food.sizes) ? food.sizes.map((s: any) => s.label ?? s) : []
+  );
+  const [newSize, setNewSize] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Handles inputs, textarea, and category select
-  const handleChange = (
-    e:
-      | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | { name: string; value: string }
-  ) => {
-    if ("target" in e) {
-      const target = e.target;
-
-      if (target instanceof HTMLInputElement) {
-        const { name, value } = target;
-        const files = target.files;
-
-        if (name === "image" && files && files.length > 0) {
-          const file = files[0];
-          setUpdatedFood((prev) => ({ ...prev, image: file }));
-
-          const reader = new FileReader();
-          reader.onload = () => setPhoto(reader.result as string);
-          reader.readAsDataURL(file);
-          return;
-        }
-
-        setUpdatedFood((prev) => ({ ...prev, [name]: value }));
-      } else if (target instanceof HTMLTextAreaElement) {
-        const { name, value } = target;
-        setUpdatedFood((prev) => ({ ...prev, [name]: value }));
-      }
-    } else {
-      // Category selection
-      setUpdatedFood((prev) => ({ ...prev, category: e.value }));
-    }
+  /* ------------------------------- Handlers ------------------------------- */
+  const handleMainImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUpdatedFood((p) => ({ ...p, image: file }));
+    const reader = new FileReader();
+    reader.onload = () => setMainPreview(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
-  // Upload image to Cloudinary
-  const uploadImage = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "Tushka");
-      const { data } = await axios.post(
-        `https://api.cloudinary.com/v1_1/dbzydfkhc/image/upload`,
-        formData
-      );
-      return data.secure_url;
-    } catch (err) {
-      console.error("Image upload error:", err);
-      return "";
-    }
+  const handleExtraImages = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newFiles = Array.from(files);
+    const previews = newFiles.map((file) => URL.createObjectURL(file));
+    setExtraFiles((prev) => [...prev, ...newFiles]);
+    setExtraPreviews((prev) => [...prev, ...previews]);
   };
 
-  // Update food API call
+  const removeExtraImage = (index: number) => {
+    setExtraFiles((prev) => prev.filter((_, i) => i !== index));
+    setExtraPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleVideo = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
+  const addSize = () => {
+    const val = newSize.trim();
+    if (!val) return;
+    setSizes((prev) => [...prev, val]);
+    setNewSize("");
+  };
+
+  const removeSize = (index: number) => {
+    setSizes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /* ------------------------------- Update ------------------------------- */
   const updateData = async () => {
-    if (!updatedFood.id) return toast.error("Food ID missing");
+    if (!updatedFood.id) return toast.error("Missing food ID");
 
     try {
       setLoading(true);
 
-      const imageUrl =
+      const mainImageUrl =
         updatedFood.image instanceof File
           ? await uploadImage(updatedFood.image)
           : updatedFood.image;
 
-      // If category not changed, use the old one
-      const finalCategory = updatedFood.category || food.categoryId;
+      const uploadedExtras = await Promise.all([
+        ...extraFiles.map((file) => uploadImage(file)),
+        ...(updatedFood.extraImages || []).filter(
+          (i): i is string => typeof i === "string"
+        ),
+      ]);
+
+      const videoUrl = videoFile
+        ? await uploadImage(videoFile)
+        : updatedFood.video;
 
       await axios.put(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`,
         {
-          foodName: updatedFood.foodName || "",
-          price: Number(updatedFood.price) || 0,
-          ingredients: updatedFood.ingredients || "",
-          image: imageUrl,
-          categoryId: finalCategory,
+          foodName: updatedFood.foodName,
+          price: Number(updatedFood.price),
+          ingredients: updatedFood.ingredients,
+          image: mainImageUrl,
+          extraImages: uploadedExtras,
+          video: videoUrl,
+          categoryId: updatedFood.categoryId || food.categoryId,
+          sizes,
         }
       );
 
-      toast.success("Food updated successfully");
+      toast.success("✅ Item updated successfully");
       refreshFood();
     } catch (err) {
       console.error("Update error:", err);
-      toast.error("Failed to update food");
+      toast.error("❌ Failed to update item");
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete food API call
+  /* ------------------------------- Delete ------------------------------- */
   const deleteFood = async () => {
-    if (!updatedFood.id) return toast.error("Food ID missing");
     try {
       setLoading(true);
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${food.id}`
       );
-      toast.success("Food deleted");
+      toast.success("🗑 Deleted successfully");
       refreshFood();
     } catch (err) {
-      console.error("Delete error:", err);
-      toast.error("Failed to delete food");
+      console.error(err);
+      toast.error("Failed to delete");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ------------------------------- UI ------------------------------- */
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="absolute bottom-2 right-2 h-11 w-11 flex items-center justify-center bg-white rounded-full cursor-pointer hover:shadow-md">
+        <div className="absolute bottom-2 right-2 h-11 w-11 flex items-center justify-center bg-white rounded-full cursor-pointer hover:shadow-lg transition">
           <Pencil className="text-red-500 h-5 w-5" />
         </div>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[640px] bg-white rounded-2xl shadow-lg border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Dish Info</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Edit Food Item
+          </DialogTitle>
+          <DialogDescription className="text-gray-500">
+            Update details, add photos, video, or sizes below.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          {/* Dish Name */}
-          <input
-            name="foodName"
-            value={updatedFood.foodName}
-            onChange={handleChange}
-            placeholder="Dish Name"
-            className="border p-2 rounded-md"
-          />
-
-          {/* Category Select */}
-          <SelectCategory
-            handleChange={handleChange}
-            updatedFood={updatedFood}
-          />
+        <div className="grid gap-5 py-4">
+          {/* Food name and price */}
+          <div className="flex gap-3">
+            <input
+              value={updatedFood.foodName}
+              onChange={(e) =>
+                setUpdatedFood((p) => ({ ...p, foodName: e.target.value }))
+              }
+              placeholder="Food name"
+              className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 outline-none"
+            />
+            <input
+              type="number"
+              value={updatedFood.price}
+              onChange={(e) =>
+                setUpdatedFood((p) => ({ ...p, price: e.target.value }))
+              }
+              placeholder="Price"
+              className="border p-2 rounded-md w-[150px] focus:ring-2 focus:ring-red-500 outline-none"
+            />
+          </div>
 
           {/* Ingredients */}
           <textarea
-            name="ingredients"
-            value={updatedFood.ingredients || ""}
-            onChange={handleChange}
-            placeholder="Ingredients"
-            className="border p-2 rounded-md"
+            value={updatedFood.ingredients}
+            onChange={(e) =>
+              setUpdatedFood((p) => ({ ...p, ingredients: e.target.value }))
+            }
+            placeholder="Ingredients or description..."
+            rows={3}
+            className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 outline-none"
           />
 
-          {/* Price */}
-          <input
-            type="number"
-            name="price"
-            value={updatedFood.price}
-            onChange={handleChange}
-            placeholder="Price"
-            className="border p-2 rounded-md"
+          {/* Category Selector */}
+          <SelectCategory
+            handleChange={(e) =>
+              setUpdatedFood((p) => ({ ...p, categoryId: e.value }))
+            }
+            updatedFood={updatedFood}
           />
 
-          {/* Image */}
-          <div className="flex flex-col items-center justify-center w-full">
-            <label
-              htmlFor="imageUpload"
-              className="relative w-full h-40 rounded-xl overflow-hidden cursor-pointer group"
-            >
-              {photo ? (
-                <>
-                  <img
-                    src={photo}
-                    alt="Preview"
-                    className="h-full w-full object-cover transition-all duration-300 group-hover:brightness-75"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition">
-                    <span className="text-white text-sm font-medium">
-                      Click to replace image
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-gray-300 rounded-xl hover:border-red-400 hover:bg-red-50 transition">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-10 h-10 text-gray-400 mb-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 16l4-4m0 0l4 4m-4-4v12M13 8h8m0 0v8m0-8l-8 8"
-                    />
-                  </svg>
-                  <p className="text-sm text-gray-500 font-medium">
-                    Click to upload image
-                  </p>
-                </div>
-              )}
+          {/* Main Image */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">
+              Main Image
             </label>
+            <input type="file" accept="image/*" onChange={handleMainImage} />
+            {mainPreview && (
+              <img
+                src={mainPreview}
+                className="w-full h-40 object-cover rounded-xl border"
+                alt="Main"
+              />
+            )}
+          </div>
 
+          {/* Extra Images */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">
+              Extra Images
+            </label>
             <input
-              id="imageUpload"
               type="file"
-              name="image"
+              multiple
               accept="image/*"
-              onChange={handleChange}
-              className="hidden"
+              onChange={handleExtraImages}
             />
+            <div className="flex flex-wrap gap-2 mt-2">
+              {extraPreviews.map((src, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={src}
+                    className="w-20 h-20 object-cover rounded-lg border"
+                  />
+                  <X
+                    onClick={() => removeExtraImage(index)}
+                    className="absolute top-1 right-1 bg-black/70 text-white w-4 h-4 rounded-full cursor-pointer p-[1px]"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Video */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">
+              Optional Video
+            </label>
+            <input type="file" accept="video/*" onChange={handleVideo} />
+            {videoPreview && (
+              <video
+                src={videoPreview}
+                controls
+                className="w-full h-[220px] rounded-xl mt-2 border"
+              />
+            )}
+          </div>
+
+          {/* Sizes */}
+          <div className="flex flex-col gap-2">
+            <label className="font-medium text-sm text-gray-700">
+              Sizes (optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                value={newSize}
+                onChange={(e) => setNewSize(e.target.value)}
+                placeholder="Add size (S, M, 38, etc.)"
+                className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 outline-none"
+              />
+              <button
+                onClick={addSize}
+                className="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {sizes.map((size, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2 text-sm border"
+                >
+                  {size}
+                  <X
+                    onClick={() => removeSize(index)}
+                    className="w-4 h-4 text-gray-600 cursor-pointer hover:text-red-600"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between">
-          <Button onClick={updateData} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+        <DialogFooter className="flex justify-between mt-4">
+          <Button
+            onClick={updateData}
+            disabled={loading}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium"
+          >
+            {loading ? "Saving..." : "Save Changes"}
           </Button>
           <Button
             onClick={deleteFood}
             disabled={loading}
-            className="bg-red-500 text-white"
+            className="bg-gray-200 text-gray-700 hover:bg-gray-300"
           >
-            <Trash />
+            <Trash className="w-4 h-4 mr-1" /> Delete
           </Button>
         </DialogFooter>
       </DialogContent>

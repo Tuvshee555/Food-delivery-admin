@@ -5,14 +5,27 @@ import { Key } from "react";
 // Represents a single food item
 export type FoodType = {
   id: Key | null | undefined;
-  categoryId: string;
   foodName: string;
-  price: string;
-  image?: File | string;
+  price: string | number;
   ingredients: string;
-  category: string;
-  foodData: [];
-  categories: string;
+  categoryId: string;
+  category?: string | { id: string; categoryName: string };
+
+  // 🖼 Main image
+  image?: File | string;
+
+  // 🖼 Multiple extra images
+  extraImages?: (File | string)[];
+
+  // 🎥 Optional video
+  video?: string | File | null;
+
+  // 📏 Sizes (array of strings or objects like { label: string })
+  sizes?: { label: string }[] | string[];
+
+  // Misc frontend-only helper fields
+  foodData?: [];
+  categories?: string;
 };
 
 // Props for FoodCard component

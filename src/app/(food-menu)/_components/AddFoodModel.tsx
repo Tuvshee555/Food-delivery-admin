@@ -1,14 +1,13 @@
-/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 import { useState, ChangeEvent } from "react";
 import axios from "axios";
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { uploadImage } from "@/utils/UploadImage"; // your existing upload function
+import { uploadImage } from "@/utils/UploadImage";
 import { FoodData } from "@/type/type";
 
 interface FoodModelProps {
-  category: { id: string; categoryName: string }; // ONLY use id
+  category: { id: string; categoryName: string };
   closeModal: () => void;
   refreshFood: () => void;
 }
@@ -18,89 +17,120 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   closeModal,
   refreshFood,
 }) => {
-  const [foodData, setFoodData] = useState<FoodData>({
+  const [foodData, setFoodData] = useState({
     foodName: "",
     price: "",
     ingredients: "",
-    image: null,
-    category: category.id, // use id
+    categoryId: category.id,
   });
 
-  const [photo, setPhoto] = useState<string | undefined>();
-  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [video, setVideo] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [sizes, setSizes] = useState<string[]>([]);
 
+  const [loading, setLoading] = useState(false);
+  const [newSize, setNewSize] = useState("");
+
+  // handle basic text/number change
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, files } = e.target as HTMLInputElement;
+    const { name, value } = e.target;
+    setFoodData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    setFoodData((prev) => ({
-      ...prev,
-      [name]: name === "image" && files ? files[0] : value,
-    }));
+  // handle multiple image uploads
+  const handleImages = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-    if (files && files[0]) {
-      const reader = new FileReader();
-      reader.onload = () => setPhoto(reader.result as string);
-      reader.readAsDataURL(files[0]);
+    const newFiles = Array.from(files);
+    setImages((prev) => [...prev, ...newFiles]);
+
+    const previews = newFiles.map((file) => URL.createObjectURL(file));
+    setImagePreviews((prev) => [...prev, ...previews]);
+  };
+
+  // remove one image
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    const newPreviews = [...imagePreviews];
+    newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
+    setImages(newImages);
+    setImagePreviews(newPreviews);
+  };
+
+  // handle video upload
+  const handleVideo = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideo(file);
+      setVideoPreview(URL.createObjectURL(file));
     }
   };
 
-  const removePhoto = () => {
-    setPhoto(undefined);
-    setFoodData((prev) => ({ ...prev, image: null }));
+  // handle size add
+  const addSize = () => {
+    const trimmed = newSize.trim();
+    if (!trimmed) return;
+    setSizes((prev) => [...prev, trimmed]);
+    setNewSize("");
+  };
+
+  // remove size
+  const removeSize = (index: number) => {
+    setSizes((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addFood = async () => {
-    // Require all fields including category
     if (!foodData.foodName || !foodData.price || !foodData.ingredients) {
-      toast.error("Please fill all fields.");
-      return;
-    }
-
-    if (!foodData.category) {
-      toast.error("Please select a category.");
+      toast.error("Please fill all required fields.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const imageUrl = foodData.image ? await uploadImage(foodData.image) : "";
+      // Upload all images
+      const uploadedImages = await Promise.all(
+        images.map(async (img) => await uploadImage(img))
+      );
 
+      // Upload video if exists
+      const uploadedVideo = video ? await uploadImage(video) : null;
+
+      // Send request to backend
       await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`, {
         foodName: foodData.foodName,
         price: Number(foodData.price),
         ingredients: foodData.ingredients,
-        image: imageUrl,
-        categoryId: foodData.category, // send id
+        categoryId: foodData.categoryId,
+        image: uploadedImages[0] || "", // main image
+        extraImages: uploadedImages.slice(1), // additional photos
+        video: uploadedVideo,
+        sizes: sizes, // ["S", "M", "L"] etc
       });
 
-      toast.success("Successfully added food");
-      setFoodData({
-        foodName: "",
-        price: "",
-        ingredients: "",
-        image: null,
-        category: category.id,
-      });
-      setPhoto(undefined);
+      toast.success("✅ Successfully added item!");
       refreshFood();
       closeModal();
     } catch (error) {
-      console.error("Error adding food:", error);
-      toast.error("Failed to add food");
+      console.error("Error adding item:", error);
+      toast.error("❌ Failed to add item");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white p-6 rounded-lg w-[480px] shadow-md">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[520px] shadow-lg overflow-y-auto max-h-[90vh]">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-bold">
-            Add new Dish to {category.categoryName}
+            Add new item to {category.categoryName}
           </h2>
           <button
             onClick={closeModal}
@@ -110,21 +140,23 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
           </button>
         </div>
 
+        {/* Form Fields */}
         <div className="grid gap-4">
-          <div className="flex w-full gap-3 justify-between">
-            <div className="flex flex-col w-full gap-2">
-              <label className="text-sm font-medium">Food Name</label>
+          {/* Food name & price */}
+          <div className="flex gap-3">
+            <div className="flex flex-col w-full">
+              <label className="text-sm font-medium">Name</label>
               <input
                 name="foodName"
-                placeholder="Type food name"
+                placeholder="Type product name"
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={foodData.foodName}
                 onChange={handleChange}
               />
             </div>
 
-            <div className="flex flex-col w-full gap-2">
-              <label className="text-sm font-medium">Food Price</label>
+            <div className="flex flex-col w-full">
+              <label className="text-sm font-medium">Price</label>
               <input
                 name="price"
                 type="number"
@@ -136,11 +168,14 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
             </div>
           </div>
 
+          {/* Ingredients */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Ingredients</label>
+            <label className="text-sm font-medium">
+              Description / Ingredients
+            </label>
             <textarea
               name="ingredients"
-              placeholder="List ingredients..."
+              placeholder="Describe or list materials..."
               className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 focus:outline-none"
               value={foodData.ingredients}
               onChange={handleChange}
@@ -148,41 +183,81 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
             />
           </div>
 
+          {/* Images */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium">Food Image</label>
-            {foodData.image && photo ? (
-              <div className="relative">
-                <img
-                  className="h-[138px] w-full rounded-xl object-cover"
-                  src={photo}
-                />
-                <X
-                  className="absolute h-[20px] w-[20px] right-2 top-2 bg-black text-white rounded-full cursor-pointer"
-                  onClick={removePhoto}
-                />
-              </div>
-            ) : (
-              <div className="border border-dashed rounded-md flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-100">
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/*"
-                  className="hidden"
-                  id="fileUpload"
-                  onChange={handleChange}
-                />
-                <label
-                  htmlFor="fileUpload"
-                  className="p-[50px] cursor-pointer text-center"
-                >
-                  Choose a file or drag & drop it here
-                </label>
-              </div>
+            <label className="text-sm font-medium">Images</label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImages}
+            />
+            <div className="flex flex-wrap gap-2 mt-2">
+              {imagePreviews.map((src, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={src}
+                    className="w-24 h-24 object-cover rounded-md border"
+                  />
+                  <X
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 w-4 h-4 bg-black text-white rounded-full cursor-pointer"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Video */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Optional Video</label>
+            <input type="file" accept="video/*" onChange={handleVideo} />
+            {videoPreview && (
+              <video
+                src={videoPreview}
+                controls
+                className="w-full h-[180px] rounded-md mt-2"
+              />
             )}
+          </div>
+
+          {/* Sizes */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">Sizes (optional)</label>
+            <div className="flex items-center gap-2">
+              <input
+                value={newSize}
+                onChange={(e) => setNewSize(e.target.value)}
+                placeholder="e.g. S, 38, 120cm..."
+                className="border p-2 rounded-md w-full"
+              />
+              <button
+                onClick={addSize}
+                type="button"
+                className="bg-black text-white rounded-md px-3 py-2 hover:bg-gray-900"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {sizes.map((size, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-200 text-sm px-3 py-1 rounded-full flex items-center gap-2"
+                >
+                  {size}
+                  <X
+                    className="w-4 h-4 cursor-pointer text-gray-600"
+                    onClick={() => removeSize(index)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end mt-4 gap-2">
+        {/* Actions */}
+        <div className="flex justify-end mt-6 gap-2">
           <button
             className="bg-gray-300 px-4 py-2 rounded-md text-sm"
             onClick={closeModal}
@@ -194,7 +269,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
             onClick={addFood}
             disabled={loading}
           >
-            {loading ? "Adding..." : "Add Dish"}
+            {loading ? "Adding..." : "Add Item"}
           </button>
         </div>
       </div>
