@@ -70,7 +70,7 @@ export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
           // Save token & user
           localStorage.setItem("token", data.token);
           localStorage.setItem("email", data.user.email);
-          localStorage.setItem("userId", data.user._id);
+          localStorage.setItem("userId", data.user.id);
           setAuthToken(data.token);
 
           toast.success(

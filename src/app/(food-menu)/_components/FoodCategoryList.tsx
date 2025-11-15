@@ -7,7 +7,7 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
   foodData,
   refreshFood,
 }) => {
-  const categoryId = category._id || category.id;
+  const categoryId = category.id || category.id;
   const foodsInCategory = foodData.filter((f) => f.categoryId === categoryId);
 
   return (

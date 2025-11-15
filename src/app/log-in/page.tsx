@@ -64,7 +64,7 @@ export default function LogIn() {
         const { token, user: userData } = response.data;
         localStorage.setItem("token", token);
         localStorage.setItem("email", userData.email);
-        localStorage.setItem("userId", userData.userId || userData._id);
+        localStorage.setItem("userId", userData.userId || userData.id);
 
         setAuthToken(token);
         toast.success("Successfully logged in!");
@@ -111,7 +111,7 @@ export default function LogIn() {
       if (data.token && data.user) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("email", data.user.email);
-        localStorage.setItem("userId", data.user._id);
+        localStorage.setItem("userId", data.user.id);
         setAuthToken(data.token);
         toast.success("Successfully logged in with Google!");
         router.push("/home-page");
@@ -143,7 +143,7 @@ export default function LogIn() {
               if (data.token && data.user) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("email", data.user.email);
-                localStorage.setItem("userId", data.user._id);
+                localStorage.setItem("userId", data.user.id);
                 setAuthToken(data.token);
                 toast.success("Successfully logged in with Facebook!");
                 router.push("/home-page");

@@ -18,7 +18,7 @@ export const CategoryNameList = ({
           <div className="flex flex-wrap gap-[16px]">
             {category.map((c, index) => (
               <div
-                key={`${c._id}-${index}`} // ensures unique key
+                key={`${c.id}-${index}`} // ensures unique key
                 className="py-2 px-4 text-sm rounded-[20px] border border-gray-400 flex gap-[8px]"
               >
                 <div>{c.categoryName}</div>
