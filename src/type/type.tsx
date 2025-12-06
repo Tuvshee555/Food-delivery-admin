@@ -4,6 +4,10 @@ import { Key } from "react";
 
 // Represents a single food item
 export type FoodType = {
+  oldPrice: string;
+  discount: string;
+  isFeatured: any;
+  salesCount: any;
   id: Key | null | undefined;
   foodName: string;
   price: string | number;

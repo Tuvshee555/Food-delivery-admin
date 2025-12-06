@@ -1,5 +1,7 @@
 type CategoryListProps = {
-  category?: { categoryName: string; _id: string; foodCount: number }[];
+  category?: {
+    [x: string]: any; categoryName: string; _id: string; foodCount: number 
+}[];
   loading: boolean;
 };
 

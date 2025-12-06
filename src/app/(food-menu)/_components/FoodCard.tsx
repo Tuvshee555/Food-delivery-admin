@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { FoodCardPropsType } from "@/type/type";
 import { UpdateFoodButton } from "./UpdateFood-Button";
 
