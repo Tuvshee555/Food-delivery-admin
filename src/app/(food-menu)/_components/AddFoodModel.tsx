@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { useEffect, useState, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import axios from "axios";
 import { X, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -18,17 +18,12 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
 }) => {
   const [foodData, setFoodData] = useState({
     foodName: "",
-    price: "", // final (numeric) price as string for input
+    price: "", // final selling price (string for input)
     ingredients: "",
     categoryId: category.id,
   });
 
   const [oldPrice, setOldPrice] = useState<string>(""); // optional original price
-  const [discount, setDiscount] = useState<string>(""); // optional percent (0-100)
-  const [lastEdited, setLastEdited] = useState<
-    "none" | "price" | "oldPrice" | "discount"
-  >("none");
-
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [video, setVideo] = useState<File | null>(null);
@@ -39,46 +34,32 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   const [loading, setLoading] = useState(false);
   const [newSize, setNewSize] = useState("");
 
-  // keep simple handlers
+  // handlers
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFoodData((prev) => ({ ...prev, [name]: value }));
-    if (name === "price") {
-      setLastEdited("price");
-    }
   };
 
   const handleOldPriceChange = (e: ChangeEvent<HTMLInputElement>) => {
     setOldPrice(e.target.value);
-    setLastEdited("oldPrice");
   };
 
-  const handleDiscountChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    // allow only digits and empty
-    if (raw === "" || /^\d{0,3}$/.test(raw)) {
-      setDiscount(raw);
-      setLastEdited("discount");
-    }
-  };
-
-  // Image handlers
   const handleImages = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
     setImages((prev) => [...prev, ...newFiles]);
-    const previews = newFiles.map((file) => URL.createObjectURL(file));
+    const previews = newFiles.map((f) => URL.createObjectURL(f));
     setImagePreviews((prev) => [...prev, ...previews]);
   };
+
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // video
   const handleVideo = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     if (file) {
@@ -87,150 +68,51 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     }
   };
 
-  // sizes
   const addSize = () => {
     const trimmed = newSize.trim();
     if (!trimmed) return;
     setSizes((prev) => [...prev, trimmed]);
     setNewSize("");
   };
+
   const removeSize = (index: number) =>
     setSizes((prev) => prev.filter((_, i) => i !== index));
 
-  useEffect(() => {
-    const p = parseFloat(foodData.price as unknown as string);
-    const op = parseFloat(oldPrice);
-    const d = parseInt(discount || "0", 10);
-
-    if (lastEdited === "oldPrice" || lastEdited === "discount") {
-      if (!isNaN(op) && !isNaN(d)) {
-        const boundedD = Math.max(0, Math.min(100, d));
-        const computed = Number((op * (1 - boundedD / 100)).toFixed(2));
-        setFoodData((prev) => ({ ...prev, price: String(computed) }));
-      } else if (!isNaN(op) && (discount === "" || discount === "0")) {
-        // only oldPrice provided, treat as no discount
-        setFoodData((prev) => ({ ...prev, price: String(op) }));
-      }
-    } else if (lastEdited === "price") {
-      if (!isNaN(p) && !isNaN(op) && (discount === "" || discount === "0")) {
-        // compute discount from price+oldPrice
-        if (op > 0) {
-          const calc = Math.round(((op - p) / op) * 100);
-          setDiscount(String(Math.max(0, Math.min(100, calc))));
-        }
-      } else if (
-        !isNaN(p) &&
-        discount !== "" &&
-        discount !== "0" &&
-        (oldPrice === "" || oldPrice === undefined)
-      ) {
-        // compute oldPrice from price + discount
-        const dd = Math.max(0, Math.min(100, parseInt(discount || "0", 10)));
-        if (dd >= 100) {
-          // degenerate: treat oldPrice as price
-          setOldPrice(String(p));
-        } else {
-          const calcOld = Number((p / (1 - dd / 100)).toFixed(2));
-          setOldPrice(String(calcOld));
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastEdited, foodData.price, oldPrice, discount]);
-
-  const validatePriceInputs = () => {
+  // validate final price presence and numeric
+  const validateInputs = () => {
+    if (!foodData.foodName.trim())
+      return { ok: false, msg: "Please provide product name." };
     const priceNum = Number(foodData.price);
-    const oldNum = oldPrice === "" ? undefined : Number(oldPrice);
-    const discNum = discount === "" ? undefined : Number(discount);
-
-    if (
-      (!priceNum || Number.isNaN(priceNum)) &&
-      (typeof oldNum === "undefined" || Number.isNaN(oldNum))
-    ) {
-      return { ok: false, message: "Provide price or old price + discount" };
+    if (!foodData.price || Number.isNaN(priceNum) || priceNum <= 0) {
+      return { ok: false, msg: "Please provide a valid final price ( > 0 )." };
     }
-
-    if (typeof discNum !== "undefined") {
-      if (Number.isNaN(discNum) || discNum < 0 || discNum > 100) {
-        return { ok: false, message: "Discount must be between 0 and 100" };
-      }
+    if (oldPrice) {
+      const op = Number(oldPrice);
+      if (Number.isNaN(op) || op <= 0)
+        return { ok: false, msg: "Old price must be a valid positive number." };
     }
-
     return { ok: true };
   };
 
   const addFood = async () => {
-    if (!foodData.foodName || !foodData.ingredients) {
-      toast.error("Please fill all required fields.");
-      return;
-    }
-
-    const validate = validatePriceInputs();
-    if (!validate.ok) {
-      toast.error(validate.message);
+    const valid = validateInputs();
+    if (!valid.ok) {
+      toast.error(valid.msg);
       return;
     }
 
     try {
       setLoading(true);
 
+      // upload images & video
       const uploadedImages = await Promise.all(
         images.map((img) => uploadImage(img))
       );
       const uploadedVideo = video ? await uploadImage(video) : null;
 
-      // prepare numeric fields
-      let priceToSend: number | undefined = undefined;
-      let oldPriceToSend: number | undefined = undefined;
-      let discountToSend: number | undefined = undefined;
-
-      const parsedPrice = Number(foodData.price);
-      const parsedOld = oldPrice === "" ? undefined : Number(oldPrice);
-      const parsedDiscount =
-        discount === "" ? undefined : Math.round(Number(discount));
-
-      if (!Number.isNaN(parsedPrice) && parsedPrice > 0)
-        priceToSend = parsedPrice;
-      if (typeof parsedOld !== "undefined" && !Number.isNaN(parsedOld))
-        oldPriceToSend = parsedOld;
-      if (
-        typeof parsedDiscount !== "undefined" &&
-        !Number.isNaN(parsedDiscount)
-      ) {
-        discountToSend = Math.max(0, Math.min(100, parsedDiscount));
-      }
-
-      // If price missing but oldPrice+discount provided, compute price
-      if (
-        typeof priceToSend === "undefined" &&
-        typeof oldPriceToSend === "number" &&
-        typeof discountToSend === "number"
-      ) {
-        priceToSend = Number(
-          (oldPriceToSend * (1 - discountToSend / 100)).toFixed(2)
-        );
-      }
-
-      // If oldPrice provided but no discount => treat as no discount
-      if (
-        typeof oldPriceToSend === "number" &&
-        typeof discountToSend === "undefined"
-      ) {
-        discountToSend = 0;
-        if (typeof priceToSend === "undefined")
-          priceToSend = Number(oldPriceToSend);
-      }
-
-      // Final check
-      if (typeof priceToSend === "undefined" || Number.isNaN(priceToSend)) {
-        toast.error("Invalid price information");
-        setLoading(false);
-        return;
-      }
-
       const payload: any = {
         foodName: foodData.foodName,
-        price: Number(priceToSend),
+        price: Number(foodData.price),
         ingredients: foodData.ingredients,
         categoryId: foodData.categoryId,
         image: uploadedImages[0] || "",
@@ -240,18 +122,15 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
         isFeatured,
       };
 
-      if (typeof oldPriceToSend !== "undefined")
-        payload.oldPrice = Number(oldPriceToSend);
-      if (typeof discountToSend !== "undefined")
-        payload.discount = Number(discountToSend);
+      if (oldPrice) payload.oldPrice = Number(oldPrice);
 
       await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`, payload);
 
       toast.success("✅ Successfully added item!");
       refreshFood();
       closeModal();
-    } catch (error) {
-      console.error("Error adding item:", error);
+    } catch (err) {
+      console.error("Error adding item:", err);
       toast.error("❌ Failed to add item");
     } finally {
       setLoading(false);
@@ -279,7 +158,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
               <label className="text-sm font-medium">Name</label>
               <input
                 name="foodName"
-                placeholder="Type product name"
+                placeholder="Product name"
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={foodData.foodName}
                 onChange={handleChange}
@@ -287,17 +166,16 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
             </div>
 
             <div className="flex flex-col w-full">
-              <label className="text-sm font-medium">Price</label>
+              <label className="text-sm font-medium">Final Price</label>
               <input
                 name="price"
                 type="number"
-                placeholder="Final price..."
+                placeholder="Final selling price"
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={foodData.price}
-                onChange={(e) => {
-                  setFoodData((prev) => ({ ...prev, price: e.target.value }));
-                  setLastEdited("price");
-                }}
+                onChange={(e) =>
+                  setFoodData((p) => ({ ...p, price: e.target.value }))
+                }
               />
             </div>
           </div>
@@ -305,27 +183,14 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
           <div className="flex gap-3">
             <div className="flex flex-col w-full">
               <label className="text-sm font-medium">
-                Old Price (optional)
+                Original Price (optional)
               </label>
               <input
                 type="number"
-                placeholder="Old price (e.g. 98,000)"
+                placeholder="Original/strike-through price"
                 className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
                 value={oldPrice}
                 onChange={handleOldPriceChange}
-              />
-            </div>
-
-            <div className="flex flex-col w-full">
-              <label className="text-sm font-medium">
-                Discount % (optional)
-              </label>
-              <input
-                type="number"
-                placeholder="e.g. 18"
-                className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
-                value={discount}
-                onChange={handleDiscountChange}
               />
             </div>
           </div>
@@ -367,6 +232,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
                   <img
                     src={src}
                     className="w-24 h-24 object-cover rounded-md border"
+                    alt={`preview-${index}`}
                   />
                   <X
                     onClick={() => removeImage(index)}

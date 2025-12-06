@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useEffect, useState, ChangeEvent } from "react";
+"use client";
+
+import React, { useEffect, useRef, useState, ChangeEvent } from "react";
 import axios from "axios";
 import { FoodCardPropsType, FoodType } from "@/type/type";
 import { SelectCategory } from "./SelectCategory";
@@ -17,286 +19,335 @@ import {
 } from "@/components/ui/dialog";
 import { uploadImage } from "@/utils/UploadImage";
 
+/**
+ * Local state shape for the editor UI.
+ * price/oldPrice/discount stored as strings to be friendly to inputs.
+ */
+interface UpdateFoodState {
+  id: string;
+  foodName: string;
+  price: string;
+  oldPrice?: string;
+  discount?: string;
+  ingredients: string;
+  image?: string | File;
+  extraImages: (string | File)[];
+  video?: string | File | null;
+  categoryId?: string;
+  sizes: string[];
+  isFeatured: boolean;
+  salesCount: number;
+}
+
 export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
 }) => {
-  const [updatedFood, setUpdatedFood] = useState<FoodType>({
-    id: food.id,
-    foodName: food.foodName || "",
-    price: food.price ?? "",
-    oldPrice: (food as any).oldPrice ?? "",
-    discount: (food as any).discount ?? "",
-    ingredients: food.ingredients || "",
-    image: food.image,
-    categoryId: food.categoryId || "",
-    video: food.video || "",
-    sizes: food.sizes || [],
-    extraImages: food.extraImages || [],
+  // init state from food prop
+  const [updatedFood, setUpdatedFood] = useState<UpdateFoodState>(() => ({
+    id: String(food.id),
+    foodName: food.foodName ?? "",
+    price: String(food.price ?? ""),
+    oldPrice: (food as any).oldPrice ? String((food as any).oldPrice) : "",
+    discount: (food as any).discount ? String((food as any).discount) : "",
+    ingredients: food.ingredients ?? "",
+    image: food.image ?? "",
+    extraImages: Array.isArray(food.extraImages)
+      ? (food.extraImages as string[]).filter((i) => typeof i === "string")
+      : [],
+    video: food.video ?? null,
+    categoryId: food.categoryId ?? "",
+    sizes: Array.isArray(food.sizes)
+      ? (food.sizes as any[]).map((s) => s.label ?? s)
+      : [],
     isFeatured: !!food.isFeatured,
-    salesCount: typeof food.salesCount === "number" ? food.salesCount : 0,
-  } as unknown as FoodType);
+    salesCount:
+      typeof food.salesCount === "number"
+        ? food.salesCount
+        : (food as any).salesCount ?? 0,
+  }));
 
+  // previews + files
   const [mainPreview, setMainPreview] = useState<string>(
     typeof food.image === "string" ? food.image : ""
   );
   const [extraPreviews, setExtraPreviews] = useState<string[]>(
     Array.isArray(food.extraImages)
-      ? food.extraImages.filter((i): i is string => typeof i === "string")
+      ? (food.extraImages as string[]).filter((i) => typeof i === "string")
       : []
   );
-  const [extraFiles, setExtraFiles] = useState<File[]>([]);
+  const [extraFiles, setExtraFiles] = useState<File[]>([]); // newly added files only
   const [videoPreview, setVideoPreview] = useState<string>(
     typeof food.video === "string" ? food.video : ""
   );
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [sizes, setSizes] = useState<string[]>(
-    Array.isArray(food.sizes) ? food.sizes.map((s: any) => s.label ?? s) : []
-  );
+
   const [newSize, setNewSize] = useState("");
+  const [sizes, setSizes] = useState<string[]>(
+    Array.isArray(food.sizes)
+      ? (food.sizes as any[]).map((s) => s.label ?? s)
+      : []
+  );
+
   const [loading, setLoading] = useState(false);
 
-  // price/oldPrice/discount input helper (track last edited to auto-calc)
-  const [lastEdited, setLastEdited] = useState<
-    "none" | "price" | "oldPrice" | "discount"
-  >("none");
+  // track how many existing (string) extra images we started with
+  const existingExtraCountRef = useRef<number>(
+    Array.isArray(food.extraImages)
+      ? (food.extraImages as string[]).filter((i) => typeof i === "string")
+          .length
+      : 0
+  );
+
+  // track created object URLs so we can revoke them on unmount
+  const createdObjectUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      // revoke any created object URLs
+      createdObjectUrlsRef.current.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {
+          // ignore
+        }
+      });
+    };
+  }, []);
+
+  // keep updatedFood in sync if prop changes externally
+  useEffect(() => {
+    setUpdatedFood((s) => ({
+      ...s,
+      foodName: food.foodName ?? s.foodName,
+      price: String(food.price ?? s.price),
+      oldPrice: (food as any).oldPrice
+        ? String((food as any).oldPrice)
+        : s.oldPrice,
+      discount: (food as any).discount
+        ? String((food as any).discount)
+        : s.discount,
+      ingredients: food.ingredients ?? s.ingredients,
+      image: food.image ?? s.image,
+      extraImages: Array.isArray(food.extraImages)
+        ? (food.extraImages as string[])
+        : s.extraImages,
+      video: food.video ?? s.video,
+      categoryId: food.categoryId ?? s.categoryId,
+      sizes: Array.isArray(food.sizes)
+        ? (food.sizes as any[]).map((x) => x.label ?? x)
+        : s.sizes,
+      isFeatured: !!food.isFeatured,
+      salesCount:
+        typeof food.salesCount === "number" ? food.salesCount : s.salesCount,
+    }));
+    // also reset previews from server-side extraImages
+    setExtraPreviews(
+      Array.isArray(food.extraImages)
+        ? (food.extraImages as string[]).filter((i) => typeof i === "string")
+        : []
+    );
+    existingExtraCountRef.current = Array.isArray(food.extraImages)
+      ? (food.extraImages as string[]).filter((i) => typeof i === "string")
+          .length
+      : 0;
+    setMainPreview(typeof food.image === "string" ? food.image : "");
+    setVideoPreview(typeof food.video === "string" ? food.video : "");
+    setExtraFiles([]);
+    setVideoFile(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [food]);
+
+  /* ------------------------------- Handlers ------------------------------- */
 
   const handleMainImage = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUpdatedFood((p) => ({ ...p, image: file } as any));
-    const reader = new FileReader();
-    reader.onload = () => setMainPreview(reader.result as string);
-    reader.readAsDataURL(file);
+    setUpdatedFood((p) => ({ ...p, image: file }));
+    const url = URL.createObjectURL(file);
+    createdObjectUrlsRef.current.push(url);
+    setMainPreview(url);
   };
 
   const handleExtraImages = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const newFiles = Array.from(files);
-    const previews = newFiles.map((file) => URL.createObjectURL(file));
-    setExtraFiles((prev) => [...prev, ...newFiles]);
+    const previews = newFiles.map((f) => {
+      const u = URL.createObjectURL(f);
+      createdObjectUrlsRef.current.push(u);
+      return u;
+    });
+
+    // append previews (existing previews are at beginning)
     setExtraPreviews((prev) => [...prev, ...previews]);
+    setExtraFiles((prev) => [...prev, ...newFiles]);
+    // also add these File objects to updatedFood.extraImages so they are visible in state
+    setUpdatedFood((p) => ({
+      ...p,
+      extraImages: [...(p.extraImages || []), ...newFiles],
+    }));
   };
 
+  /**
+   * Remove extra image preview at index.
+   * If index points to an originally-existing image (string), remove it from updatedFood.extraImages.
+   * If it's a newly added file, remove from extraFiles and from updatedFood.extraImages (file identity).
+   */
   const removeExtraImage = (index: number) => {
-    setExtraFiles((prev) => prev.filter((_, i) => i !== index));
+    // current number of existing string images present at time of removal:
+    const existingCount = existingExtraCountRef.current;
+    // remove preview entry
     setExtraPreviews((prev) => prev.filter((_, i) => i !== index));
+
+    if (index < existingCount) {
+      // remove an original string image
+      setUpdatedFood((p) => {
+        const newArr = (p.extraImages || []).filter(
+          (v, i) => !(i === index && typeof v === "string")
+        );
+        return { ...p, extraImages: newArr };
+      });
+      // decrement existing count
+      existingExtraCountRef.current = Math.max(
+        0,
+        existingExtraCountRef.current - 1
+      );
+    } else {
+      // remove a newly added file
+      const newFileIndex = index - existingCount;
+      setExtraFiles((prev) => {
+        const f = prev[newFileIndex];
+        const newFiles = prev.filter((_, i) => i !== newFileIndex);
+        // remove that file from updatedFood.extraImages by matching name + size heuristic
+        setUpdatedFood((p) => {
+          const filtered = (p.extraImages || []).filter((item) => {
+            if (item instanceof File && f) {
+              return !(
+                item.name === f.name &&
+                item.size === f.size &&
+                item.type === f.type
+              );
+            }
+            return true;
+          });
+          return { ...p, extraImages: filtered };
+        });
+        return newFiles;
+      });
+    }
   };
 
   const handleVideo = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0] ?? null;
     if (!file) return;
     setVideoFile(file);
-    setVideoPreview(URL.createObjectURL(file));
+    setUpdatedFood((p) => ({ ...p, video: file }));
+    const url = URL.createObjectURL(file);
+    createdObjectUrlsRef.current.push(url);
+    setVideoPreview(url);
   };
 
   const addSize = () => {
-    const val = newSize.trim();
-    if (!val) return;
-    setSizes((prev) => [...prev, val]);
+    const trimmed = newSize.trim();
+    if (!trimmed) return;
+    setSizes((prev) => [...prev, trimmed]);
+    setUpdatedFood((p) => ({ ...p, sizes: [...(p.sizes || []), trimmed] }));
     setNewSize("");
   };
 
   const removeSize = (index: number) => {
     setSizes((prev) => prev.filter((_, i) => i !== index));
+    setUpdatedFood((p) => ({
+      ...p,
+      sizes: (p.sizes || []).filter((_, i) => i !== index),
+    }));
   };
 
-  // price/oldPrice/discount change handlers (store as strings for inputs)
+  /* ------------------------------- Price helpers ------------------------------- */
+
   const handlePriceChange = (v: string) => {
-    setUpdatedFood((p: any) => ({ ...p, price: v }));
-    setLastEdited("price");
+    setUpdatedFood((p) => ({ ...p, price: v }));
   };
   const handleOldPriceChange = (v: string) => {
-    setUpdatedFood((p: any) => ({ ...p, oldPrice: v }));
-    setLastEdited("oldPrice");
+    setUpdatedFood((p) => ({ ...p, oldPrice: v }));
   };
   const handleDiscountChange = (v: string) => {
     // allow empty or 0-100 numeric
     if (v === "" || /^\d{0,3}$/.test(v)) {
-      setUpdatedFood((p: any) => ({ ...p, discount: v }));
-      setLastEdited("discount");
+      setUpdatedFood((p) => ({ ...p, discount: v }));
     }
   };
 
-  // auto-calc rules (mirror AddFoodModel behavior)
-  useEffect(() => {
-    const p = Number(updatedFood.price);
-    const op =
-      updatedFood.oldPrice === "" ? undefined : Number(updatedFood.oldPrice);
-    const d =
-      updatedFood.discount === "" ? undefined : Number(updatedFood.discount);
-
-    if (lastEdited === "oldPrice" || lastEdited === "discount") {
-      if (
-        typeof op === "number" &&
-        !Number.isNaN(op) &&
-        typeof d === "number" &&
-        !Number.isNaN(d)
-      ) {
-        const boundedD = Math.max(0, Math.min(100, d));
-        const computed = Number((op * (1 - boundedD / 100)).toFixed(2));
-        setUpdatedFood((p) => ({ ...p, price: String(computed) } as any));
-      } else if (
-        typeof op === "number" &&
-        !Number.isNaN(op) &&
-        (updatedFood.discount === "" || updatedFood.discount === "0")
-      ) {
-        setUpdatedFood((p) => ({ ...p, price: String(op) } as any));
-      }
-    } else if (lastEdited === "price") {
-      if (
-        !Number.isNaN(p) &&
-        typeof op === "number" &&
-        (updatedFood.discount === "" || updatedFood.discount === "0")
-      ) {
-        if (op > 0) {
-          const calc = Math.round(((op - p) / op) * 100);
-          setUpdatedFood(
-            (p) =>
-              ({
-                ...p,
-                discount: String(Math.max(0, Math.min(100, calc))),
-              } as any)
-          );
-        }
-      } else if (
-        !Number.isNaN(p) &&
-        updatedFood.discount !== "" &&
-        (updatedFood.oldPrice === "" || updatedFood.oldPrice === undefined)
-      ) {
-        const dd = Math.max(
-          0,
-          Math.min(100, Number(updatedFood.discount || 0))
-        );
-        if (dd >= 100) {
-          setUpdatedFood((p) => ({ ...p, oldPrice: String(p) } as any));
-        } else {
-          const calcOld = Number((p / (1 - dd / 100)).toFixed(2));
-          setUpdatedFood((p) => ({ ...p, oldPrice: String(calcOld) } as any));
-        }
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    lastEdited,
-    updatedFood.price,
-    updatedFood.oldPrice,
-    updatedFood.discount,
-  ]);
+  /* ------------------------------- Update ------------------------------- */
 
   const updateData = async () => {
-    if (!updatedFood.id) return toast.error("Missing food ID");
+    if (!updatedFood.id) {
+      toast.error("Missing food ID");
+      return;
+    }
 
     try {
       setLoading(true);
 
+      // main image (upload only if changed file)
       const mainImageUrl =
         updatedFood.image instanceof File
           ? await uploadImage(updatedFood.image)
-          : (updatedFood.image as string);
+          : (updatedFood.image as string | undefined);
 
-      const uploadedExtras = await Promise.all([
-        ...extraFiles.map((file) => uploadImage(file)),
-        ...(Array.isArray(updatedFood.extraImages)
-          ? (updatedFood.extraImages as any[])
-          : []
-        ).filter((i): i is string => typeof i === "string"),
-      ]);
+      // upload only newly added extra files
+      const uploadedNewExtras = await Promise.all(
+        extraFiles.map((f) => uploadImage(f))
+      );
 
+      // existing string extras still in state:
+      const existingStrings = (updatedFood.extraImages || []).filter(
+        (i): i is string => typeof i === "string"
+      );
+
+      const finalExtraImages = [...existingStrings, ...uploadedNewExtras];
+
+      // upload video if changed
       const videoUrl = videoFile
         ? await uploadImage(videoFile)
-        : (updatedFood.video as string | undefined);
+        : typeof updatedFood.video === "string"
+        ? updatedFood.video
+        : undefined;
 
-      // prepare numeric fields
+      // build numeric fields
       const parsedPrice =
         updatedFood.price === "" ? undefined : Number(updatedFood.price);
       const parsedOldPrice =
-        updatedFood.oldPrice === "" ? undefined : Number(updatedFood.oldPrice);
+        (updatedFood.oldPrice ?? "") === ""
+          ? undefined
+          : Number(updatedFood.oldPrice);
       const parsedDiscount =
-        updatedFood.discount === ""
+        (updatedFood.discount ?? "") === ""
           ? undefined
           : Math.round(Number(updatedFood.discount));
 
-      let finalPrice =
-        typeof parsedPrice === "number" && !Number.isNaN(parsedPrice)
-          ? parsedPrice
-          : undefined;
-      let finalOldPrice =
-        typeof parsedOldPrice === "number" && !Number.isNaN(parsedOldPrice)
-          ? parsedOldPrice
-          : undefined;
-      let finalDiscount =
-        typeof parsedDiscount === "number" && !Number.isNaN(parsedDiscount)
-          ? Math.max(0, Math.min(100, parsedDiscount))
-          : undefined;
-
-      if (typeof finalPrice === "undefined") {
-        if (
-          typeof finalOldPrice === "number" &&
-          typeof finalDiscount === "number"
-        ) {
-          finalPrice = Number(
-            (finalOldPrice * (1 - finalDiscount / 100)).toFixed(2)
-          );
-        } else if (typeof finalOldPrice === "number") {
-          finalPrice = Number(finalOldPrice);
-          finalDiscount = finalDiscount ?? 0;
-        }
-      }
-
-      if (typeof finalOldPrice === "undefined") {
-        if (
-          typeof finalPrice === "number" &&
-          typeof finalDiscount === "number"
-        ) {
-          if (finalDiscount >= 100) {
-            finalOldPrice = finalPrice;
-          } else {
-            finalOldPrice = Number(
-              (finalPrice / (1 - finalDiscount / 100)).toFixed(2)
-            );
-          }
-        }
-      }
-
-      if (typeof finalDiscount === "undefined") {
-        if (
-          typeof finalOldPrice === "number" &&
-          typeof finalPrice === "number" &&
-          finalOldPrice > 0
-        ) {
-          finalDiscount = Math.round(
-            ((finalOldPrice - finalPrice) / finalOldPrice) * 100
-          );
-          finalDiscount = Math.max(0, Math.min(100, finalDiscount));
-        } else {
-          finalDiscount = 0;
-        }
-      }
-
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         foodName: updatedFood.foodName,
-        price: typeof finalPrice === "number" ? Number(finalPrice) : undefined,
         ingredients: updatedFood.ingredients,
         image: mainImageUrl,
-        extraImages: uploadedExtras,
+        extraImages: finalExtraImages,
         video: videoUrl,
-        categoryId: updatedFood.categoryId || food.categoryId,
-        sizes,
+        categoryId: updatedFood.categoryId || undefined,
+        sizes: updatedFood.sizes,
         isFeatured: !!updatedFood.isFeatured,
-        // allow manual override of salesCount only if number provided in state
-        salesCount:
-          typeof updatedFood.salesCount === "number"
-            ? updatedFood.salesCount
-            : undefined,
       };
 
-      // only include optional numeric fields when they exist
-      if (typeof finalOldPrice === "number")
-        payload.oldPrice = Number(finalOldPrice);
-      if (typeof finalDiscount === "number")
-        payload.discount = Number(finalDiscount);
+      if (typeof parsedPrice === "number" && !Number.isNaN(parsedPrice))
+        payload.price = parsedPrice;
+      if (typeof parsedOldPrice === "number" && !Number.isNaN(parsedOldPrice))
+        payload.oldPrice = parsedOldPrice;
+      if (typeof parsedDiscount === "number" && !Number.isNaN(parsedDiscount))
+        payload.discount = Math.max(0, Math.min(100, parsedDiscount));
+
+      // optionally include salesCount if provided as number
+      if (typeof updatedFood.salesCount === "number")
+        payload.salesCount = updatedFood.salesCount;
 
       await axios.put(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${updatedFood.id}`,
@@ -312,6 +363,8 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
       setLoading(false);
     }
   };
+
+  /* ------------------------------- Delete ------------------------------- */
 
   const deleteFood = async () => {
     try {
@@ -329,6 +382,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
     }
   };
 
+  /* ------------------------------- UI ------------------------------- */
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -348,53 +402,51 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
         </DialogHeader>
 
         <div className="grid gap-5 py-4">
+          {/* name + price */}
           <div className="flex gap-3">
             <input
               value={updatedFood.foodName}
               onChange={(e) =>
-                setUpdatedFood((p: any) => ({ ...p, foodName: e.target.value }))
+                setUpdatedFood((p) => ({ ...p, foodName: e.target.value }))
               }
               placeholder="Food name"
               className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 outline-none"
             />
             <input
               type="number"
-              value={updatedFood.price as any}
-              onChange={(e) => {
-                handlePriceChange(e.target.value);
-              }}
+              value={updatedFood.price}
+              onChange={(e) => handlePriceChange(e.target.value)}
               placeholder="Price"
               className="border p-2 rounded-md w-[150px] focus:ring-2 focus:ring-red-500 outline-none"
             />
           </div>
 
+          {/* oldPrice + discount */}
           <div className="flex gap-3">
             <input
               type="number"
-              value={updatedFood.oldPrice as any}
+              value={updatedFood.oldPrice ?? ""}
               onChange={(e) => handleOldPriceChange(e.target.value)}
               placeholder="Old price (optional)"
               className="border p-2 rounded-md w-full focus:ring-2 focus:ring-red-500 outline-none"
             />
             <input
               type="number"
-              value={updatedFood.discount as any}
+              value={updatedFood.discount ?? ""}
               onChange={(e) => handleDiscountChange(e.target.value)}
               placeholder="Discount % (optional)"
               className="border p-2 rounded-md w-[150px] focus:ring-2 focus:ring-red-500 outline-none"
             />
           </div>
 
+          {/* featured + sales */}
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium">Онцлох (Featured)</label>
             <input
               type="checkbox"
               checked={!!updatedFood.isFeatured}
               onChange={(e) =>
-                setUpdatedFood((p: any) => ({
-                  ...p,
-                  isFeatured: e.target.checked,
-                }))
+                setUpdatedFood((p) => ({ ...p, isFeatured: e.target.checked }))
               }
             />
             <div className="text-sm text-gray-600 ml-4">
@@ -403,26 +455,26 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
             </div>
           </div>
 
+          {/* ingredients */}
           <textarea
             value={updatedFood.ingredients}
             onChange={(e) =>
-              setUpdatedFood((p: any) => ({
-                ...p,
-                ingredients: e.target.value,
-              }))
+              setUpdatedFood((p) => ({ ...p, ingredients: e.target.value }))
             }
             placeholder="Ingredients or description..."
             rows={3}
             className="border p-2 rounded-md focus:ring-2 focus:ring-red-500 outline-none"
           />
 
+          {/* category */}
           <SelectCategory
             handleChange={(e) =>
-              setUpdatedFood((p: any) => ({ ...p, categoryId: e.value }))
+              setUpdatedFood((p) => ({ ...p, categoryId: e.value }))
             }
-            updatedFood={updatedFood}
+            updatedFood={updatedFood as unknown as FoodType}
           />
 
+          {/* main image */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-700">
               Main Image
@@ -437,6 +489,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
             )}
           </div>
 
+          {/* extra images */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-700">
               Extra Images
@@ -453,6 +506,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
                   <img
                     src={src}
                     className="w-20 h-20 object-cover rounded-lg border"
+                    alt={`extra-${index}`}
                   />
                   <X
                     onClick={() => removeExtraImage(index)}
@@ -463,6 +517,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
             </div>
           </div>
 
+          {/* video */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-700">
               Optional Video
@@ -477,6 +532,7 @@ export const UpdateFoodButton: React.FC<FoodCardPropsType> = ({
             )}
           </div>
 
+          {/* sizes */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-700">
               Sizes (optional)
