@@ -5,11 +5,12 @@
 import React, { createContext, useContext, useMemo } from "react";
 
 type Messages = Record<string, any>;
+type Params = Record<string, string | number>;
 
 type I18nContextType = {
   locale: string;
   messages: Messages;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, params?: Params, fallback?: string) => string;
 };
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -23,7 +24,7 @@ export default function ClientI18nProvider({
   messages: Messages;
   children: React.ReactNode;
 }) {
-  const t = (key: string, fallback?: string) => {
+  const t = (key: string, params?: Params, fallback?: string) => {
     const value = key
       .split(".")
       .reduce<any>(
@@ -31,7 +32,15 @@ export default function ClientI18nProvider({
         messages
       );
 
-    return value ?? fallback ?? key;
+    let text = value ?? fallback ?? key;
+
+    if (params && typeof text === "string") {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, String(v));
+      });
+    }
+
+    return text;
   };
 
   const value = useMemo(() => ({ locale, messages, t }), [locale, messages]);
@@ -51,5 +60,6 @@ export function useLocale() {
 
 export function useTranslations() {
   const { t } = useI18n();
-  return (key: string, fallback?: string) => t(key, fallback);
+  return (key: string, params?: Params, fallback?: string) =>
+    t(key, params, fallback);
 }

@@ -1,9 +1,12 @@
+"use client";
+
 import { useState } from "react";
-import { AddFoodModel } from "./AddFoodModel";
+import { AddFoodModel } from "./addFood/AddFoodModel";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 interface AddFoodButtonProps {
   category: {
-    id: string; // ONLY use id
+    id: string;
     categoryName: string;
   };
   refreshFood: () => void;
@@ -13,25 +16,48 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
   category,
   refreshFood,
 }) => {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <div
-        className="w-[240px] h-[241px] rounded-[20px] flex flex-col items-center justify-center border border-red-500 border-dashed cursor-pointer hover:shadow-md transition"
+      <button
+        type="button"
         onClick={() => setOpen(true)}
+        className="
+          w-[240px] h-[240px]
+          rounded-xl
+          border border-dashed border-border
+          bg-background
+          flex flex-col items-center justify-center
+          gap-2
+          text-foreground
+          hover:bg-muted
+        "
       >
-        <div className="h-[40px] w-[40px] bg-red-500 flex items-center justify-center text-white rounded-full shadow-lg">
+        <div
+          className="
+            h-[44px] w-[44px]
+            rounded-full
+            bg-primary
+            text-primary-foreground
+            flex items-center justify-center
+            text-lg
+          "
+        >
           +
         </div>
-        <p className="mt-2 text-center text-gray-600 text-sm">
-          Add new Dish to {category.categoryName}
+
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+          {t("food.add_to_category", {
+            category: category.categoryName,
+          })}
         </p>
-      </div>
+      </button>
 
       {open && (
         <AddFoodModel
-          category={category} // pass only id
+          category={category}
           closeModal={() => setOpen(false)}
           refreshFood={refreshFood}
         />

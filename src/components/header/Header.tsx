@@ -12,7 +12,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import ThemeToggle from "./ThemeToggle";
+import ThemeToggle from "./theme/ThemeToggle";
+import TranslateButton from "./translate/TranslateButton";
 
 export default function Header() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -48,6 +49,9 @@ export default function Header() {
       >
         {/* Theme toggle */}
         <ThemeToggle />
+
+        {/* Language switcher */}
+        <TranslateButton />
 
         {/* User menu */}
         <Dialog>

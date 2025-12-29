@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Key } from "react";
 
 // -------------------- FOOD TYPES --------------------
@@ -106,6 +107,7 @@ export type SignUpEmailStepType = {
 };
 
 export type Datas = {
+  name: string;
   username: string | number | readonly string[] | undefined;
   categoryName: string;
   _id: string;

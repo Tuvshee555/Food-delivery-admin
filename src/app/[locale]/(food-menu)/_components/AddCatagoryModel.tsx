@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -7,59 +9,67 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useCategory } from "@/provider/CategoryProvider";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export const AddCategoryModal = () => {
+  const { t } = useI18n();
   const { category, setCategory, postData } = useCategory();
 
   return (
-    <div className="w-[1171px] p-[24px]">
-      <div className="text-black font-semibold text-[20px] mb-[26px]">
-        Dish Category
-      </div>
+    <section className="space-y-4">
+      <h2 className="text-base font-semibold">{t("category.title")}</h2>
 
       <Dialog>
         <DialogTrigger asChild>
-          <button className="h-[30px] w-[30px] bg-red-500 flex items-center justify-center text-white rounded-full">
+          <Button size="icon" className="h-[44px] w-[44px] rounded-full">
             +
-          </button>
+          </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle>Add Category</DialogTitle>
+            <DialogTitle>{t("category.add_title")}</DialogTitle>
             <DialogDescription>
-              Enter the category details and click save.
+              {t("category.add_description")}
             </DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-right">
-                Name
+              <label htmlFor="name" className="text-sm text-muted-foreground">
+                {t("category.name")}
               </label>
+
               <input
                 id="name"
-                className="col-span-3 border p-2 rounded"
-                value={category.username} // Assuming category has 'username'
+                className="
+                  col-span-3
+                  h-[44px]
+                  rounded-md
+                  border border-border
+                  bg-background
+                  px-3
+                  text-sm
+                  text-foreground
+                "
+                value={category.name ?? ""}
                 onChange={(e) =>
-                  setCategory((prev: any) => ({
+                  setCategory((prev) => ({
                     ...prev,
-                    username: e.target.value,
+                    name: e.target.value,
                   }))
                 }
               />
             </div>
           </div>
+
           <DialogFooter>
-            <button
-              type="submit"
-              onClick={postData}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Save changes
-            </button>
+            <Button onClick={postData}>{t("common.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 };

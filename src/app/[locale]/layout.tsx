@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import ClientI18nProvider from "@/components/i18n/ClientI18Provider";
+import ClientI18nProvider from "@/components/i18n/ClientI18nProvider";
 import QueryProvider from "./QueryProvider";
 import { AuthProvider } from "@/provider/AuthProvider";
 import Providers from "@/provider/Providers";

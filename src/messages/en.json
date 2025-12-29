@@ -1,3 +1,38 @@
 {
-  "contact": "Contact"
+  "sidebar": {
+    "tagline": "Swift delivery",
+    "food_menu": "Food menu",
+    "orders": "Orders",
+    "revenue": "Revenue dashboard"
+  },
+  "category": {
+    "title": "Dish category",
+    "add_title": "Add category",
+    "add_description": "Enter the category details and save.",
+    "name": "Name"
+  },
+  "common": {
+    "save": "Save"
+  },
+  "food": {
+    "add_to_category": "Add new dish to {category}",
+    "validation": {
+      "name": "Please provide product name.",
+      "price": "Please provide a valid final price.",
+      "old_price": "Old price must be a valid positive number."
+    },
+    "toast": {
+      "success": "Successfully added item!",
+      "error": "Failed to add item."
+    },
+    "add_title": "Add new item to {category}",
+    "fields": {
+      "name": "Product name",
+      "price": "Final price",
+      "old_price": "Original price (optional)",
+      "featured": "Featured",
+      "description": "Description / ingredients",
+      "size": "Size"
+    }
+  }
 }
