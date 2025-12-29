@@ -6,7 +6,7 @@ import { useState } from "react";
 import { FoodMenu } from "@/app/(food-menu)/FoodMenu";
 import { Orders } from "@/app/(orders)/_component/Orders";
 import { Sidebar } from "@/components/Side-Bar";
-import Header from "@/components/Header";
+import Header from "@/components/header/Header";
 import RevenueDashboard from "@/components/stats/RevenueDashboard";
 
 export default function HomePage() {

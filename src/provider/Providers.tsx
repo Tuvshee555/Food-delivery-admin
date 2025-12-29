@@ -4,17 +4,21 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { AuthProvider } from "./AuthProvider";
 import { Suspense, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [queryclient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
-    <QueryClientProvider client={queryclient}>
-      <AuthProvider>
-        <Suspense>
-          {children}
-          <Toaster />
-        </Suspense>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Suspense>
+            {children}
+            <Toaster />
+          </Suspense>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
