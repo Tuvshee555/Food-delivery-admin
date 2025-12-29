@@ -17,7 +17,6 @@ type CategoryNode = {
 
 export const FoodMenu = () => {
   const [loadingCats, setLoadingCats] = useState(false);
-  const [loadingFoods, setLoadingFoods] = useState(false);
 
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [flatCats, setFlatCats] = useState<CategoryNode[]>([]);
@@ -63,15 +62,12 @@ export const FoodMenu = () => {
 
   const reloadFoods = async () => {
     try {
-      setLoadingFoods(true);
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`
       );
       setFoods(res.data || []);
     } catch (err) {
       console.error("Error fetching foods:", err);
-    } finally {
-      setLoadingFoods(false);
     }
   };
 

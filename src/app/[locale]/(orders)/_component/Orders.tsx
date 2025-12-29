@@ -8,7 +8,6 @@ import {
   ChevronRight as NextIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import React from "react";
 
 /* ---------- TYPES ---------- */
 type FoodItem = {

@@ -1,13 +1,6 @@
-"use client";
+// app/page.tsx
+import { redirect } from "next/navigation";
 
-import LogIn from "./log-in/page";
-
-export default function Home() {
-  return (
-    <>
-      <LogIn />
-      {/* <QPayPage /> */}
-      {/* <QPayTokenComponent /> */}
-    </>
-  );
+export default function Page() {
+  redirect("/mn");
 }
