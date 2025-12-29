@@ -1,55 +1,69 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FoodCategoryList } from "../_components/FoodCategoryList";
 import { FoodType, CategoryType } from "@/type/type";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 type CategoriesFoodsProps = {
-  category: CategoryType[]; // type the category prop
+  category: CategoryType[];
 };
 
 export const CategoriesFoods: React.FC<CategoriesFoodsProps> = ({
   category,
 }) => {
+  const { t } = useI18n();
   const [foodData, setFoodData] = useState<FoodType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Normalize backend food data for frontend
   const normalizeFood = (food: any): FoodType => ({
     ...food,
-    _id: food.id, // frontend expects _id
-    category: food.category || food.categoryId, // fallback if category is null
+    _id: food.id,
+    category: food.category || food.categoryId,
     foodData: [],
     categories: "",
   });
 
-  // Fetch all foods
   const getFoodData = async () => {
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`
       );
-      const normalizedData = response.data.map(normalizeFood);
-      setFoodData(normalizedData);
-    } catch (error) {
-      console.error("Error fetching foodData", error);
+      setFoodData(response.data.map(normalizeFood));
+    } catch {
+      /* silent fail – UI handles empty */
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Refresh food list
   const refreshFood = async () => {
     await getFoodData();
   };
 
   useEffect(() => {
     getFoodData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
+  }
+
+  if (category.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">{t("no_categories")}</p>
+    );
+  }
+
   return (
-    <div className="w-full flex flex-col gap-[24px] mt-[20px]">
-      {category.map((e) => (
+    <div className="w-full flex flex-col gap-6 mt-5">
+      {category.map((c) => (
         <FoodCategoryList
-          key={e.id} // use id as key
-          category={e}
+          key={c.id}
+          category={c}
           foodData={foodData}
           refreshFood={refreshFood}
         />

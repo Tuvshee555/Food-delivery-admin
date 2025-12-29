@@ -1,26 +1,44 @@
+"use client";
+
 import { FoodCard } from "./FoodCard";
 import { AddFoodButton } from "./AddFoodButton";
 import { FoodCategoryListPropsType } from "@/type/type";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
   category,
   foodData,
   refreshFood,
 }) => {
-  const categoryId = category.id || category.id;
+  const { t } = useI18n();
+
+  const categoryId = category.id;
   const foodsInCategory = foodData.filter((f) => f.categoryId === categoryId);
 
   return (
-    <div className="flex flex-col gap-4 bg-white rounded-md p-5">
-      {/* Category Name */}
-      <h2 className="text-lg font-bold">
-        {category.categoryName} ({foodsInCategory.length})
+    <section
+      className="
+        bg-card
+        text-foreground
+        border border-border
+        rounded-xl
+        p-5
+        flex flex-col
+        gap-4
+      "
+    >
+      {/* Category name */}
+      <h2 className="text-base font-semibold">
+        {t("category_with_count", {
+          name: category.categoryName,
+          count: foodsInCategory.length,
+        })}
       </h2>
 
-      {/* Food Cards */}
-      <div className="flex gap-4 flex-wrap">
-        {/* Add Food Button */}
+      {/* Food cards */}
+      <div className="flex flex-wrap gap-4">
         <AddFoodButton category={category} refreshFood={refreshFood} />
+
         {foodsInCategory.map((food) => (
           <FoodCard
             key={food.id}
@@ -30,6 +48,6 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 };

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CategoryType, SelectCategoryProps } from "@/type/type";
@@ -9,11 +11,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export const SelectCategory: React.FC<SelectCategoryProps> = ({
   handleChange,
   updatedFood,
 }) => {
+  const { t } = useI18n();
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -25,8 +29,7 @@ export const SelectCategory: React.FC<SelectCategoryProps> = ({
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`
       );
       setCategories(data);
-    } catch (err) {
-      console.error("Error fetching categories:", err);
+    } catch {
       setError(true);
     } finally {
       setLoading(false);
@@ -37,61 +40,70 @@ export const SelectCategory: React.FC<SelectCategoryProps> = ({
     getCategories();
   }, []);
 
-  const currentCategoryId = updatedFood?.categoryId || "";
+  const currentCategoryId = updatedFood?.categoryId ?? "";
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error loading categories</div>;
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
+  }
+
+  if (error) {
+    return (
+      <p className="text-sm text-muted-foreground">{t("error_loading")}</p>
+    );
+  }
 
   const selectedCategory =
-    categories.find((c) => c.id === currentCategoryId)?.categoryName ||
-    "Select category";
+    categories.find((c) => c.id === currentCategoryId)?.categoryName ??
+    t("select_category");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full justify-start text-left border border-gray-300 hover:bg-gray-100"
-        >
+        <Button variant="outline" className="w-full justify-start h-[44px]">
           {selectedCategory}
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[480px] bg-white">
+      <DialogContent className="sm:max-w-[480px] bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle>Select a Category</DialogTitle>
+          <DialogTitle>{t("select_category")}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-3 mt-3">
           {categories.map((cat) => {
             const isSelected = cat.id === currentCategoryId;
+
             return (
-              <div
+              <button
                 key={cat.id}
-                className={`p-4 rounded-lg cursor-pointer border transition ${
-                  isSelected
-                    ? "border-red-500 bg-red-100"
-                    : "border-gray-300 hover:bg-gray-100"
-                }`}
+                type="button"
                 onClick={() => {
                   handleChange({ name: "category", value: cat.id });
                   setOpen(false);
                 }}
+                className={`
+                  p-4 rounded-lg text-left
+                  border border-border
+                  transition
+                  ${isSelected ? "bg-muted" : "hover:bg-muted"}
+                `}
               >
-                <h3 className="text-base font-medium">{cat.categoryName}</h3>
-                <p className="text-sm text-gray-500">{cat.foodCount} dishes</p>
-              </div>
+                <h3 className="text-sm font-medium">{cat.categoryName}</h3>
+                <p className="text-xs text-muted-foreground">
+                  {t("dish_count", { count: cat.foodCount })}
+                </p>
+              </button>
             );
           })}
         </div>
 
         <div className="flex justify-end mt-4">
           <Button
-            variant="secondary"
+            variant="outline"
             onClick={() => setOpen(false)}
-            className="bg-gray-200 text-gray-700 hover:bg-gray-300"
+            className="h-[44px]"
           >
-            Close
+            {t("close")}
           </Button>
         </div>
       </DialogContent>

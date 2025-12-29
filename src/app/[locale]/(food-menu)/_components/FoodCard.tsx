@@ -1,14 +1,32 @@
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
 import { FoodCardPropsType } from "@/type/type";
-import { UpdateFoodButton } from "./UpdateFood-Button";
+// import { UpdateFoodButton } from "./UpdateFood-Button";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import UpdateFoodButton from "./updateFood/UpdateFoodButton";
 
 export const FoodCard: React.FC<FoodCardPropsType> = ({
   food,
   refreshFood,
   category,
 }) => {
+  const { t } = useI18n();
+
   return (
-    <div className="bg-white shadow-md p-4 gap-5 border-[1px] rounded-2xl flex flex-col items-center w-[271px] max-w-[241px]">
-      <div className="relative">
+    <div
+      className="
+        bg-card
+        text-foreground
+        border border-border
+        rounded-2xl
+        p-4
+        flex flex-col items-center
+        w-[241px]
+        gap-4
+      "
+    >
+      <div className="relative w-full">
         <img
           src={
             typeof food.image === "string"
@@ -17,9 +35,10 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
               ? URL.createObjectURL(food.image)
               : ""
           }
-          className="w-[240px] h-[130px] gap-2 rounded-2xl object-cover"
+          className="w-full h-[130px] rounded-xl object-cover"
           alt={food.foodName}
         />
+
         <UpdateFoodButton
           food={food}
           refreshFood={refreshFood}
@@ -27,13 +46,14 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
         />
       </div>
 
-      <div className="text-center mt-2 w-full g-[8px]">
-        <div className="flex justify-between">
-          <h3 className="text-red-500 font-500">{food.foodName}</h3>
-          <h3 className="text-[black] font-[500]">${food.price}</h3>
+      <div className="w-full space-y-1.5">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-medium truncate">{food.foodName}</h3>
+          <span className="text-sm font-medium">{food.price}</span>
         </div>
-        <p className="text-[black] line-clamp-2 text-start">
-          {food.ingredients}
+
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {food.ingredients || t("no_description")}
         </p>
       </div>
     </div>

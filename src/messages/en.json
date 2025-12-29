@@ -9,10 +9,18 @@
     "title": "Dish category",
     "add_title": "Add category",
     "add_description": "Enter the category details and save.",
-    "name": "Name"
+    "name": "Name",
+    "add": "Add category",
+    "placeholder": "e.g. Drinks, Snacks",
+    "child_note": "This will be created under the selected category.",
+    "empty": "No categories found"
   },
   "common": {
-    "save": "Save"
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add item",
+    "adding": "Adding...",
+    "loading": "Loading..."
   },
   "food": {
     "add_to_category": "Add new dish to {category}",
@@ -34,5 +42,25 @@
       "description": "Description / ingredients",
       "size": "Size"
     }
-  }
+  },
+  "categories": "Categories",
+"add_main": "Add main",
+"loading": "Loading categories…",
+"no_categories": "No categories yet. Create one to start.",
+"rename_prompt": "Rename category:",
+"delete_confirm": "Delete category \"{name}\"? Its foods will lose this category.",
+"add_sub": "Add subcategory",
+"no_description": "No description",
+"category_with_count": "{name} ({count})",
+"error_loading": "Error loading categories",
+"select_category": "Select category",
+"dish_count": "{count} dishes",
+"close": "Close",
+"select_category_hint": "Please create a category and select it to manage foods."
+
+
+
+
+
+
 }

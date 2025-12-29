@@ -1,7 +1,15 @@
+"use client";
+
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
+
+type Category = {
+  _id: string;
+  categoryName: string;
+  foodCount: number;
+};
+
 type CategoryListProps = {
-  category?: {
-    [x: string]: any; categoryName: string; _id: string; foodCount: number 
-}[];
+  category?: Category[];
   loading: boolean;
 };
 
@@ -9,27 +17,41 @@ export const CategoryNameList = ({
   category = [],
   loading,
 }: CategoryListProps) => {
+  const { t } = useI18n();
+
+  if (loading) {
+    return (
+      <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+    );
+  }
+
+  if (category.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">{t("category.empty")}</p>
+    );
+  }
+
   return (
-    <div>
-      {loading ? (
-        <p>Loading...</p>
-      ) : category.length === 0 ? (
-        <p>No categories found</p>
-      ) : (
-        <div className="flex flex-col gap-[16px] p-[24px]">
-          <div className="flex flex-wrap gap-[16px]">
-            {category.map((c, index) => (
-              <div
-                key={`${c.id}-${index}`} // ensures unique key
-                className="py-2 px-4 text-sm rounded-[20px] border border-gray-400 flex gap-[8px]"
-              >
-                <div>{c.categoryName}</div>
-                <p className="text-gray-500">{c.foodCount}</p>
-              </div>
-            ))}
+    <div className="p-6">
+      <div className="flex flex-wrap gap-4">
+        {category.map((c) => (
+          <div
+            key={c._id}
+            className="
+              flex items-center gap-2
+              rounded-full
+              border border-border
+              px-4 py-2
+              text-sm
+              bg-background
+              text-foreground
+            "
+          >
+            <span>{c.categoryName}</span>
+            <span className="text-muted-foreground">{c.foodCount}</span>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

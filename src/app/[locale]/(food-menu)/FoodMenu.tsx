@@ -1,12 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-import { CategoryTree } from "./_components/CategoryTree";
+import { CategoryTree } from "./_components/categoryThree/CategoryTree";
 import { FoodCategoryList } from "./_components/FoodCategoryList";
 import { FoodType } from "@/type/type";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 type CategoryNode = {
   id: string;
@@ -16,8 +18,9 @@ type CategoryNode = {
 };
 
 export const FoodMenu = () => {
-  const [loadingCats, setLoadingCats] = useState(false);
+  const { t } = useI18n();
 
+  const [loadingCats, setLoadingCats] = useState(false);
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [flatCats, setFlatCats] = useState<CategoryNode[]>([]);
   const [foods, setFoods] = useState<FoodType[]>([]);
@@ -25,14 +28,13 @@ export const FoodMenu = () => {
     null
   );
 
-  // --- helpers ---
+  /* ---------- helpers ---------- */
+
   const flattenTree = (nodes: CategoryNode[]): CategoryNode[] => {
     const result: CategoryNode[] = [];
     const walk = (n: CategoryNode) => {
       result.push(n);
-      if (n.children && n.children.length) {
-        n.children.forEach(walk);
-      }
+      n.children?.forEach(walk);
     };
     nodes.forEach(walk);
     return result;
@@ -46,40 +48,31 @@ export const FoodMenu = () => {
       );
       const data: CategoryNode[] = res.data || [];
       setTree(data);
+
       const flat = flattenTree(data);
       setFlatCats(flat);
 
-      // if nothing selected, select first category (if exists)
       if (!selectedCategoryId && flat.length > 0) {
         setSelectedCategoryId(flat[0].id);
       }
-    } catch (err) {
-      console.error("Error fetching category tree:", err);
     } finally {
       setLoadingCats(false);
     }
   };
 
   const reloadFoods = async () => {
-    try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`
-      );
-      setFoods(res.data || []);
-    } catch (err) {
-      console.error("Error fetching foods:", err);
-    }
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`);
+    setFoods(res.data || []);
   };
 
   useEffect(() => {
-    (async () => {
-      await Promise.all([reloadCategories(), reloadFoods()]);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    Promise.all([reloadCategories(), reloadFoods()]);
   }, []);
 
+  /* ---------- derived ---------- */
+
   const selectedCategory = useMemo(
-    () => flatCats.find((c) => c.id === selectedCategoryId) || null,
+    () => flatCats.find((c) => c.id === selectedCategoryId) ?? null,
     [flatCats, selectedCategoryId]
   );
 
@@ -89,26 +82,40 @@ export const FoodMenu = () => {
   }, [foods, selectedCategoryId]);
 
   return (
-    <div className="w-full bg-[#f4f4f5] text-black flex min-h-screen">
-      <div className="p-6 w-screen flex gap-6">
-        {/* LEFT: Category Tree */}
-        <aside className="w-[260px] bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+    <div className="w-full min-h-screen bg-background text-foreground">
+      <div className="p-6 flex gap-6">
+        {/* LEFT */}
+        <aside
+          className="
+            w-[260px]
+            bg-card
+            border border-border
+            rounded-lg
+            p-4
+          "
+        >
           <CategoryTree
             tree={tree}
             loading={loadingCats}
             selectedId={selectedCategoryId}
-            onSelect={(id) => setSelectedCategoryId(id)}
+            onSelect={setSelectedCategoryId}
             onChanged={reloadCategories}
           />
         </aside>
 
-        {/* RIGHT: Foods in selected category */}
+        {/* RIGHT */}
         <main className="flex-1">
           {!selectedCategory ? (
-            <div className="bg-white rounded-lg p-8 shadow-sm border border-gray-200">
-              <p className="text-gray-500 text-sm">
-                Please create a category and select it from the left to manage
-                foods.
+            <div
+              className="
+                bg-card
+                border border-border
+                rounded-lg
+                p-8
+              "
+            >
+              <p className="text-sm text-muted-foreground">
+                {t("select_category_hint")}
               </p>
             </div>
           ) : (

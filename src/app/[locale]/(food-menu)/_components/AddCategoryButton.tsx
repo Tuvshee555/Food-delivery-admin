@@ -11,6 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 type Props = {
   parentId?: string | null;
@@ -24,9 +26,10 @@ export const AddCategoryButton: React.FC<Props> = ({
   parentId = null,
   onCreated,
   variant = "primary",
-  label = "Add category",
+  label,
   tooltip,
 }) => {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,9 +46,6 @@ export const AddCategoryButton: React.FC<Props> = ({
       setCategoryName("");
       setOpen(false);
       onCreated();
-    } catch (err) {
-      console.error("Error adding category:", err);
-      alert("Failed to add category");
     } finally {
       setLoading(false);
     }
@@ -53,56 +53,58 @@ export const AddCategoryButton: React.FC<Props> = ({
 
   const triggerClass =
     variant === "primary"
-      ? "inline-flex items-center gap-1 rounded-full bg-red-500 text-white text-xs px-3 py-1.5 hover:bg-red-600"
-      : "inline-flex items-center justify-center rounded-full border border-gray-300 p-1 hover:bg-gray-100";
+      ? "inline-flex items-center gap-1 h-[44px] px-4 rounded-full bg-primary text-primary-foreground text-sm"
+      : "inline-flex items-center justify-center h-[44px] w-[44px] rounded-full border border-border hover:bg-muted";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button type="button" className={triggerClass} title={tooltip}>
-          <Plus className="w-3 h-3" />
-          {variant === "primary" && <span>{label}</span>}
+          <Plus className="w-4 h-4" />
+          {variant === "primary" && <span>{label ?? t("category.add")}</span>}
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px] bg-white">
+
+      <DialogContent className="sm:max-w-[400px] bg-card text-foreground">
         <DialogHeader>
-          <DialogTitle>Add category</DialogTitle>
+          <DialogTitle>{t("category.add")}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3 py-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium">Name</label>
+            <label className="text-sm font-medium">{t("category.name")}</label>
             <input
-              className="border border-gray-300 rounded-md px-2 py-1.5 text-sm"
+              className="h-[44px] rounded-md border border-border bg-background px-3 text-sm"
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
-              placeholder="e.g. Drinks, Snacks, etc."
+              placeholder={t("category.placeholder")}
             />
           </div>
 
           {parentId && (
-            <p className="text-xs text-gray-500">
-              This will be created under the selected category.
+            <p className="text-xs text-muted-foreground">
+              {t("category.child_note")}
             </p>
           )}
         </div>
 
         <DialogFooter>
-          <button
+          <Button
             type="button"
-            className="px-3 py-1.5 text-xs rounded-md border border-gray-300 bg-white"
+            variant="outline"
             onClick={() => setOpen(false)}
+            className="h-[44px]"
           >
-            Cancel
-          </button>
-          <button
+            {t("common.cancel")}
+          </Button>
+          <Button
             type="button"
-            className="px-3 py-1.5 text-xs rounded-md bg-black text-white disabled:bg-gray-400"
             onClick={handleSubmit}
             disabled={loading}
+            className="h-[44px]"
           >
-            {loading ? "Adding…" : "Add"}
-          </button>
+            {loading ? t("common.adding") : t("common.add")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { Button } from "@/components/ui/button";
+
 interface Props {
   loading: boolean;
   onCancel: () => void;
@@ -7,21 +10,27 @@ interface Props {
 }
 
 export const AddFoodFooter = ({ loading, onCancel, onSubmit }: Props) => {
+  const { t } = useI18n();
+
   return (
-    <div className="flex justify-end mt-6 gap-2">
-      <button
+    <div className="flex justify-end gap-2 mt-6">
+      <Button
+        type="button"
+        variant="outline"
         onClick={onCancel}
-        className="bg-gray-300 px-4 py-2 rounded-md text-sm"
+        className="h-[44px]"
       >
-        Cancel
-      </button>
-      <button
+        {t("common.cancel")}
+      </Button>
+
+      <Button
+        type="button"
         onClick={onSubmit}
         disabled={loading}
-        className="bg-black text-white px-4 py-2 rounded-md text-sm disabled:bg-gray-400"
+        className="h-[44px]"
       >
-        {loading ? "Adding..." : "Add Item"}
-      </button>
+        {loading ? t("common.adding") : t("common.add")}
+      </Button>
     </div>
   );
 };
