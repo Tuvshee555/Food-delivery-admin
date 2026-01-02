@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -9,6 +8,7 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 import { UserType } from "@/type/type";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 declare global {
   interface Window {
@@ -18,14 +18,14 @@ declare global {
 }
 
 export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
+  const { t } = useI18n();
   const router = useRouter();
 
-  // Load Facebook SDK
+  /* ---------- Facebook SDK ---------- */
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.FB) return;
+    if (typeof window === "undefined" || window.FB) return;
 
-    window.fbAsyncInit = function () {
+    window.fbAsyncInit = () => {
       window.FB.init({
         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
         cookie: true,
@@ -41,10 +41,10 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
     document.body.appendChild(script);
   }, []);
 
-  // Google signup
+  /* ---------- Google ---------- */
   const handleGoogleSignUp = async (credentialResponse: CredentialResponse) => {
     if (!credentialResponse.credential) {
-      toast.error("No Google credentials received!");
+      toast.error(t("google_error"));
       return;
     }
 
@@ -63,60 +63,60 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
 
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.message || "Google signup failed!");
+        toast.error(data.message || t("google_error"));
         return;
       }
 
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("email", data.user.email);
       setUser(data.user);
-      toast.success("Signed up with Google successfully!");
+      toast.success(t("signup_success"));
       router.push("/log-in");
-    } catch (error) {
-      console.error(error);
-      toast.error("Google signup failed!");
+    } catch {
+      toast.error(t("google_error"));
     }
   };
 
-  // Facebook signup
+  /* ---------- Facebook ---------- */
   const handleFacebookSignUp = () => {
     if (!window.FB) {
-      toast.error("Facebook SDK not loaded yet!");
+      toast.error(t("facebook_error"));
       return;
     }
 
     window.FB.login(
       async (response: fb.StatusResponse) => {
-        if (response.authResponse) {
-          const token = response.authResponse.accessToken;
+        if (!response.authResponse) {
+          toast.error(t("facebook_error"));
+          return;
+        }
 
-          try {
-            const res = await fetch(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/auth/facebook`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, role: "ADMIN" }),
-              }
-            );
-
-            const data = await res.json();
-            if (!res.ok) {
-              toast.error(data.message || "Facebook signup failed!");
-              return;
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/auth/facebook`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                token: response.authResponse.accessToken,
+                role: "ADMIN",
+              }),
             }
+          );
 
-            localStorage.setItem("user", JSON.stringify(data.user));
-            localStorage.setItem("email", data.user.email);
-            setUser(data.user);
-            toast.success("Signed up with Facebook successfully!");
-            router.push("/log-in");
-          } catch (error) {
-            console.error(error);
-            toast.error("Facebook signup failed!");
+          const data = await res.json();
+          if (!res.ok) {
+            toast.error(data.message || t("facebook_error"));
+            return;
           }
-        } else {
-          toast.error("Facebook login cancelled or failed!");
+
+          localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("email", data.user.email);
+          setUser(data.user);
+          toast.success(t("signup_success"));
+          router.push("/log-in");
+        } catch {
+          toast.error(t("facebook_error"));
         }
       },
       { scope: "email,public_profile" }
@@ -124,71 +124,76 @@ export const CreateEmail = ({ nextStep, user, setUser }: UserType) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-white flex items-center justify-center gap-12">
-      <div className="flex flex-col gap-6 w-[416px]">
-        <ChevronLeft
-          className="bg-white rounded-[6px] hover:cursor-pointer"
+    <div className="min-h-screen w-full bg-background text-foreground flex items-center justify-center gap-12 px-4">
+      <div className="flex flex-col gap-6 w-full max-w-[416px]">
+        <button
           onClick={() => router.back()}
-        />
-        <h1 className="text-[24px] font-semibold text-black">
-          Create your account
-        </h1>
-        <p className="text-[16px] text-[#71717a]">
-          Sign up to explore your favorite dishes.
-        </p>
+          className="h-[44px] w-[44px] flex items-center justify-center rounded-md hover:bg-muted"
+        >
+          <ChevronLeft />
+        </button>
+
+        <div className="space-y-1.5">
+          <h1 className="text-lg font-semibold">{t("create_account")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("create_account_sub")}
+          </p>
+        </div>
 
         <input
           value={user.email}
           onChange={(e) =>
             setUser((prev: any) => ({ ...prev, email: e.target.value }))
           }
-          placeholder="Enter your email address"
-          className="border-2 rounded-[8px] p-[6px] text-[#71717b]"
+          placeholder={t("email_placeholder")}
+          className="h-[44px] rounded-md border border-border bg-background px-3 text-sm"
         />
 
         <button
-          className="h-[36px] w-full rounded-[8px] text-white bg-[#d1d1d1] hover:bg-black"
           onClick={nextStep}
+          className="h-[44px] w-full rounded-md bg-primary text-primary-foreground text-sm font-medium"
         >
-          Lets go
+          {t("lets_go")}
         </button>
 
-        <div className="mt-2">
-          <div className="flex items-center gap-2 text-gray-500">
-            <span className="w-full h-px bg-gray-300" />
-            or
-            <span className="w-full h-px bg-gray-300" />
-          </div>
-
-          <div className="mt-2">
-            <GoogleLogin
-              onSuccess={handleGoogleSignUp}
-              onError={() => toast.error("Google login error")}
-            />
-          </div>
-
-          <div className="mt-2">
-            <button
-              onClick={handleFacebookSignUp}
-              className="h-[36px] w-full bg-[#1877F2] text-white rounded-[8px] hover:bg-[#145dbf]"
-            >
-              Continue with Facebook
-            </button>
-          </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="flex-1 h-px bg-border" />
+          {t("or")}
+          <span className="flex-1 h-px bg-border" />
         </div>
 
-        <div className="flex gap-3 justify-center">
-          <p className="text-[16px] text-[#71717a]">Already have an account?</p>
-          <p
-            className="text-[16px] text-[#2762ea] hover:cursor-pointer"
+        <GoogleLogin
+          onSuccess={handleGoogleSignUp}
+          onError={() => toast.error(t("google_error"))}
+        />
+
+        {/* Facebook – brand color preserved */}
+        <button
+          onClick={handleFacebookSignUp}
+          className="h-[44px] w-full rounded-md bg-[#1877F2] text-white font-medium"
+        >
+          {t("facebook_continue")}
+        </button>
+
+        <div className="flex gap-2 justify-center text-sm">
+          <span className="text-muted-foreground">{t("have_account")}</span>
+          <button
             onClick={() => router.push("/log-in")}
+            className="text-primary underline"
           >
-            Log in
-          </p>
+            {t("login")}
+          </button>
         </div>
       </div>
 
-      <img src="/deliverM.png" className="w-[860px] h-[900px]" />
+      {/* Desktop image only */}
+      <div className="hidden lg:block">
+        <img
+          src="/deliverM.png"
+          alt={t("login_image_alt")}
+          className="max-w-[860px] w-full h-auto object-contain"
+        />
+      </div>
     </div>
   );
 };

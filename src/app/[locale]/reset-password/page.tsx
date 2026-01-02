@@ -1,9 +1,12 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export default function ResetPasswordPage() {
+  const { t } = useI18n();
   const [password, setPassword] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -22,33 +25,58 @@ export default function ResetPasswordPage() {
     );
 
     if (res.ok) {
-      toast.success("Password reset successful");
+      toast.success(t("password_reset_success"));
       router.push("/log-in");
     } else {
-      toast.error("Invalid or expired link");
+      toast.error(t("password_reset_error"));
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-xl shadow-lg w-96"
+        className="
+          w-full max-w-sm
+          bg-card
+          border border-border
+          rounded-xl
+          p-6
+          space-y-4
+        "
       >
-        <h2 className="text-xl font-bold mb-4">Reset Password</h2>
+        <h2 className="text-base font-semibold">{t("reset_password")}</h2>
+
         <input
           type="password"
-          placeholder="Enter new password"
-          className="border w-full p-2 mb-4 rounded"
+          placeholder={t("new_password_placeholder")}
+          className="
+            h-[44px]
+            w-full
+            rounded-md
+            border border-border
+            bg-background
+            px-3
+            text-sm
+          "
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
         <button
           type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded w-full"
+          className="
+            h-[44px]
+            w-full
+            rounded-md
+            bg-primary
+            text-primary-foreground
+            text-sm
+            font-medium
+          "
         >
-          Reset Password
+          {t("reset_password")}
         </button>
       </form>
     </div>

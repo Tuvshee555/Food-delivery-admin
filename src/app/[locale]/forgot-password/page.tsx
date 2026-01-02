@@ -1,14 +1,18 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/user/forgot-password`,
       {
@@ -19,33 +23,58 @@ export default function ForgotPasswordPage() {
     );
 
     if (res.ok) {
-      toast.success("Check your email for reset link");
+      toast.success(t("reset_email_sent"));
       router.push("/log-in");
     } else {
-      toast.error("Error sending reset link");
+      toast.error(t("reset_email_error"));
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-xl shadow-lg w-96"
+        className="
+          w-full max-w-sm
+          bg-card
+          border border-border
+          rounded-xl
+          p-6
+          space-y-4
+        "
       >
-        <h2 className="text-xl font-bold mb-4">Forgot Password</h2>
+        <h2 className="text-base font-semibold">{t("forgot_password")}</h2>
+
         <input
           type="email"
-          placeholder="Enter your email"
-          className="border w-full p-2 mb-4 rounded"
+          placeholder={t("email_placeholder")}
+          className="
+            h-[44px]
+            w-full
+            rounded-md
+            border border-border
+            bg-background
+            px-3
+            text-sm
+          "
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
+
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+          className="
+            h-[44px]
+            w-full
+            rounded-md
+            bg-primary
+            text-primary-foreground
+            text-sm
+            font-medium
+          "
         >
-          Send Reset Link
+          {t("send_reset_link")}
         </button>
       </form>
     </div>

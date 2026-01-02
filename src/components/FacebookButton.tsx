@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/provider/AuthProvider";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 declare global {
   interface Window {
@@ -13,14 +14,15 @@ declare global {
 }
 
 export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
+  const { t } = useI18n();
   const router = useRouter();
   const { setAuthToken } = useAuth();
 
-  // Load FB SDK
+  /* ---------- load SDK ---------- */
   useEffect(() => {
     if (typeof window === "undefined" || window.FB) return;
 
-    window.fbAsyncInit = function () {
+    window.fbAsyncInit = () => {
       window.FB.init({
         appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
         cookie: true,
@@ -35,20 +37,19 @@ export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
     document.body.appendChild(script);
   }, []);
 
+  /* ---------- auth ---------- */
   const handleFacebookAuth = () => {
     if (!window.FB) {
-      toast.error("Facebook SDK not loaded yet!");
+      toast.error(t("facebook_sdk_error"));
       return;
     }
 
     window.FB.login(
       async (response: fb.StatusResponse) => {
         if (!response.authResponse) {
-          toast.error("Facebook login cancelled or failed!");
+          toast.error(t("facebook_cancelled"));
           return;
         }
-
-        const token = response.authResponse.accessToken;
 
         try {
           const res = await fetch(
@@ -56,30 +57,29 @@ export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ token, role }),
+              body: JSON.stringify({
+                token: response.authResponse.accessToken,
+                role,
+              }),
             }
           );
 
           const data = await res.json();
 
           if (!res.ok) {
-            toast.error(data.message || "Facebook authentication failed!");
+            toast.error(data.message || t("facebook_auth_error"));
             return;
           }
 
-          // Save token & user
           localStorage.setItem("token", data.token);
           localStorage.setItem("email", data.user.email);
           localStorage.setItem("userId", data.user.id);
           setAuthToken(data.token);
 
-          toast.success(
-            `Successfully logged in with Facebook as ${data.user.role}`
-          );
+          toast.success(t("facebook_login_success", { role: data.user.role }));
           router.push("/home-page");
-        } catch (err) {
-          console.error("Facebook auth error:", err);
-          toast.error("Facebook authentication failed!");
+        } catch {
+          toast.error(t("facebook_auth_error"));
         }
       },
       { scope: "email,public_profile" }
@@ -88,10 +88,18 @@ export const FacebookButton = ({ role = "USER" }: { role?: string }) => {
 
   return (
     <button
+      type="button"
       onClick={handleFacebookAuth}
-      className="h-[36px] w-full bg-[#1877F2] text-white rounded-[8px] hover:bg-[#145dbf]"
+      className="
+        h-[44px]
+        w-full
+        rounded-md
+        text-white
+        font-medium
+        bg-[#1877F2]
+      "
     >
-      Continue with Facebook
+      {t("facebook_continue")}
     </button>
   );
 };

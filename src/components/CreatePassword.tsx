@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -6,6 +5,7 @@ import { SignUpEmailStepType } from "@/type/type";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 export const CreatePassword = ({
   nextStep,
@@ -13,11 +13,13 @@ export const CreatePassword = ({
   setUser,
   user,
 }: SignUpEmailStepType) => {
+  const { t } = useI18n();
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTouched, setIsTouched] = useState(false);
-  const router = useRouter();
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUser((prev) => ({ ...prev, password: e.target.value }));
@@ -38,104 +40,116 @@ export const CreatePassword = ({
 
   const validatePasswords = () => {
     const { password, repassword } = user;
-
-    // Regex: exactly 6 digits (0-9)
     const passwordRegex = /^\d{6}$/;
 
     if (!password) {
-      setError("Password is required");
+      setError(t("password_required"));
     } else if (!passwordRegex.test(password)) {
-      setError("Password must be exactly 6 numbers");
+      setError(t("password_rule"));
     } else if (repassword && password !== repassword) {
-      setError("Passwords do not match");
+      setError(t("password_mismatch"));
     } else {
       setError(null);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!error) {
-      nextStep();
-    }
+  const handleSubmit = () => {
+    if (!error) nextStep();
   };
 
   return (
-    <div className="h-screen w-screen bg-white flex items-center justify-center gap-12">
-      <div className="flex flex-col gap-6 w-[416px]">
-        <ChevronLeft
-          className="bg-white rounded-[6px] hover:cursor-pointer"
+    <div className="min-h-screen w-full bg-background text-foreground flex items-center justify-center gap-12 px-4">
+      <div className="flex flex-col gap-6 w-full max-w-[416px]">
+        <button
           onClick={stepBack}
-        />
+          className="h-[44px] w-[44px] flex items-center justify-center rounded-md hover:bg-muted"
+        >
+          <ChevronLeft />
+        </button>
 
-        <h1 className="text-[24px] font-semibold text-black">
-          Create a password
-        </h1>
-        <p className="text-[16px] text-[#71717a]">
-          Use a 6-digit numeric password for your account.
-        </p>
+        <div className="space-y-1.5">
+          <h1 className="text-lg font-semibold">{t("create_password")}</h1>
+          <p className="text-sm text-muted-foreground">{t("password_hint")}</p>
+        </div>
 
-        {/* Password Input */}
+        {/* Password */}
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
-            className="border-2 rounded-[8px] p-[6px] text-[#71717b] w-full pr-10"
-            placeholder="Enter your password"
+            placeholder={t("password_placeholder")}
             value={user.password}
             onChange={handlePasswordChange}
+            className="h-[44px] w-full rounded-md border border-border bg-background px-3 pr-10 text-sm"
           />
           <button
             type="button"
-            className="absolute right-3 top-2 text-gray-500"
             onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           >
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
-        {/* Confirm Password Input */}
+        {/* Confirm password */}
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
-            className="border-2 rounded-[8px] p-[6px] text-[#71717b] w-full pr-10"
-            placeholder="Confirm your password"
+            placeholder={t("confirm_password_placeholder")}
             value={user.repassword}
             onChange={handleConfirmPasswordChange}
+            className="h-[44px] w-full rounded-md border border-border bg-background px-3 pr-10 text-sm"
           />
           <button
             type="button"
-            className="absolute right-3 top-2 text-gray-500"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           >
-            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
-        {/* Error message */}
-        {isTouched && error && <p className="text-red-500 text-sm">{error}</p>}
+        {/* Error */}
+        {isTouched && error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
-          className={`h-[36px] w-full rounded-[8px] text-white ${
-            error ? "bg-[#d1d1d1]" : "bg-black hover:bg-gray-800"
-          }`}
           onClick={handleSubmit}
           disabled={!!error}
+          className="
+            h-[44px]
+            w-full
+            rounded-md
+            bg-primary
+            text-primary-foreground
+            text-sm
+            font-medium
+            disabled:opacity-50
+          "
         >
-          Continue
+          {t("continue")}
         </button>
 
-        <div className="flex gap-3 justify-center">
-          <p className="text-[16px] text-[#71717a]">Already have an account?</p>
-          <p
-            className="text-[16px] text-[#2762ea] hover:cursor-pointer"
+        <div className="flex gap-2 justify-center text-sm">
+          <span className="text-muted-foreground">{t("have_account")}</span>
+          <button
             onClick={() => router.push("/log-in")}
+            className="text-primary underline"
           >
-            Log in
-          </p>
+            {t("login")}
+          </button>
         </div>
       </div>
 
-      <img src="./deliverM.png" className="w-[860px] h-[900px]" />
+      {/* Desktop illustration */}
+      <div className="hidden lg:block">
+        <img
+          src="/deliverM.png"
+          alt={t("login_image_alt")}
+          className="max-w-[860px] w-full h-auto object-contain"
+        />
+      </div>
     </div>
   );
 };
