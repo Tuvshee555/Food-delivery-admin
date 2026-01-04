@@ -114,7 +114,40 @@
 "amount": "Дүн",
 "status": "Төлөв",
 "date": "Огноо",
-"no_payments": "Сүүлийн төлбөр байхгүй"
+"no_payments": "Сүүлийн төлбөр байхгүй",
+  "unauthorized": "Нэвтрэх эрхгүй",
+  "fetch_failed": "Захиалга татаж чадсангүй",
+  "orders_empty": "Захиалга алга",
+
+  "copied": "Хуулсан",
+  "copy_failed": "Хуулахад алдаа гарлаа",
+  "copy": "Хуулах",
+
+  "invalid_status_transition": "Төлөв буруу өөрчлөгдөж байна",
+  "status_updated": "Төлөв шинэчлэгдлээ",
+  "status_update_failed": "Төлөв шинэчилж чадсангүй",
+  "change_status": "Төлөв солих",
+
+  "items_short": "бараа",
+  "no_items": "Бараа байхгүй",
+
+  "delivery": "Хүргэлтийн мэдээлэл",
+  "name": "Нэр",
+  "phone": "Утас",
+  "city": "Хот",
+  "district": "Дүүрэг",
+  "khoroo": "Хороо",
+  "address": "Хаяг",
+  "notes": "Нэмэлт мэдээлэл",
+
+  "order_number": "Захиалгын дугаар",
+  "created_at": "Үүсгэсэн огноо",
+  "payment_method": "Төлбөрийн хэлбэр",
+
+  "view_details": "Дэлгэрэнгүй харах",
+  "copy_summary": "Товч мэдээлэл хуулах",
+
+  "no_email": "И-мэйл байхгүй"
 
 
 

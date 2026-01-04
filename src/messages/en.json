@@ -112,7 +112,40 @@
 "amount": "Amount",
 "status": "Status",
 "date": "Date",
-"no_payments": "No recent payments"
+"no_payments": "No recent payments",
+  "unauthorized": "Unauthorized access",
+  "fetch_failed": "Failed to fetch orders",
+  "orders_empty": "No orders found",
+
+  "copied": "Copied",
+  "copy_failed": "Copy failed",
+  "copy": "Copy",
+
+  "invalid_status_transition": "Invalid status transition",
+  "status_updated": "Status updated",
+  "status_update_failed": "Failed to update status",
+  "change_status": "Change status",
+
+  "items_short": "items",
+  "no_items": "No items",
+
+  "delivery": "Delivery information",
+  "name": "Name",
+  "phone": "Phone",
+  "city": "City",
+  "district": "District",
+  "khoroo": "Khoroo",
+  "address": "Address",
+  "notes": "Notes",
+
+  "order_number": "Order number",
+  "created_at": "Created at",
+  "payment_method": "Payment method",
+
+  "view_details": "View details",
+  "copy_summary": "Copy summary",
+
+  "no_email": "No email"
 
 
 
