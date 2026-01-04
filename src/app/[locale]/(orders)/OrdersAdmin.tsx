@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -27,7 +27,8 @@ type FoodItem = {
     foodName?: string;
     price?: number;
     image?: string | null;
-  };
+    categoryId?: string | null;
+  } | null;
 };
 
 type RawOrder = {
@@ -39,7 +40,6 @@ type RawOrder = {
   status?: OrderStatus;
   paymentMethod?: string;
   user?: { id?: string; email?: string; address?: string | null } | null;
-  // sometimes backend returns delivery nested object
   delivery?: {
     firstName?: string | null;
     lastName?: string | null;
@@ -50,7 +50,6 @@ type RawOrder = {
     address?: string | null;
     notes?: string | null;
   };
-  // or top-level fields
   firstName?: string | null;
   lastName?: string | null;
   phone?: string | null;
@@ -59,7 +58,6 @@ type RawOrder = {
   khoroo?: string | null;
   address?: string | null;
   notes?: string | null;
-
   foodOrderItems?: Array<{
     id?: string;
     quantity: number;
@@ -68,9 +66,10 @@ type RawOrder = {
       foodName?: string;
       price?: number;
       image?: string | null;
+      categoryId?: string | null;
     } | null;
   }>;
-  items?: FoodItem[]; // possible alternative key
+  items?: FoodItem[];
 };
 
 const STATUS_FLOW: Record<OrderStatus, OrderStatus[]> = {
@@ -88,6 +87,16 @@ const PLACEHOLDER =
   encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='240'><rect width='100%' height='100%' fill='#f3f4f6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#9ca3af' font-size='16'>No image</text></svg>`
   );
+
+const STATUS_BADGE: Record<OrderStatus, string> = {
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+  WAITING_PAYMENT: "bg-orange-50 text-orange-700 border-orange-200",
+  COD_PENDING: "bg-sky-50 text-sky-700 border-sky-200",
+  PAID: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  DELIVERING: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  DELIVERED: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  CANCELLED: "bg-rose-50 text-rose-700 border-rose-200",
+};
 
 export default function OrdersAdmin() {
   const { t } = useI18n();
@@ -115,13 +124,14 @@ export default function OrdersAdmin() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(({ data }) => {
-        // backend might return array or map; normalize to array
         if (Array.isArray(data)) {
           setOrders(data);
         } else if (data?.orders && Array.isArray(data.orders)) {
           setOrders(data.orders);
+        } else if (Array.isArray(data?.ordersList)) {
+          // sometimes API shapes vary
+          setOrders(data.ordersList);
         } else {
-          // try to detect single-order response
           setOrders([]);
         }
       })
@@ -166,7 +176,6 @@ export default function OrdersAdmin() {
       return;
     }
 
-    // optimistic
     const before = orders[idx];
     const updated = [...orders];
     updated[idx] = { ...before, status: nextStatus };
@@ -180,7 +189,6 @@ export default function OrdersAdmin() {
       );
       toast.success(t("status_updated"));
     } catch (err) {
-      // rollback
       setOrders((prev) => {
         const copyPrev = [...prev];
         const pos = copyPrev.findIndex((p) => p.id === orderId);
@@ -285,12 +293,21 @@ export default function OrdersAdmin() {
                   </div>
 
                   <div className="flex items-center gap-3">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                        STATUS_BADGE[(o.status ?? "PENDING") as OrderStatus]
+                      }`}
+                    >
+                      {o.status ?? "PENDING"}
+                    </span>
+
                     <select
                       value={o.status ?? "PENDING"}
                       onChange={(e) =>
                         changeStatus(o.id, e.target.value as OrderStatus)
                       }
                       className="px-3 py-1.5 text-xs rounded-full border font-medium"
+                      title={t("change_status")}
                     >
                       <option value={o.status ?? "PENDING"}>
                         {o.status ?? "PENDING"}
@@ -314,11 +331,9 @@ export default function OrdersAdmin() {
                 </div>
               </div>
 
-              {/* expanded */}
               {expanded.has(o.id) && (
                 <div className="border-t border-border px-5 py-4">
                   <div className="grid md:grid-cols-3 gap-6">
-                    {/* LEFT: items */}
                     <div className="md:col-span-2 space-y-3">
                       {items.length === 0 && (
                         <div className="text-sm text-muted-foreground">
@@ -329,6 +344,9 @@ export default function OrdersAdmin() {
                       {items.map((it, i) => {
                         const food = it.food ?? (it as any);
                         const imgSrc = food?.image ?? PLACEHOLDER;
+                        const price = food?.price ?? 0;
+                        const qty = it.quantity ?? 0;
+                        const subtotal = price * qty;
                         return (
                           <div
                             key={`${o.id}-${i}-${food?.id ?? "nofood"}`}
@@ -349,12 +367,19 @@ export default function OrdersAdmin() {
                               </div>
                               <div className="text-xs text-muted-foreground">
                                 id: {food?.id ?? "(none)"}
+                                {" • "}
+                                {food?.categoryId
+                                  ? `cat: ${food.categoryId}`
+                                  : "cat: (none)"}
                               </div>
                             </div>
                             <div className="text-sm text-right">
-                              <div>₮{(food?.price ?? 0).toLocaleString()}</div>
+                              <div>₮{price.toLocaleString()}</div>
                               <div className="text-xs text-muted-foreground">
-                                ×{it.quantity}
+                                ×{qty}
+                              </div>
+                              <div className="text-xs mt-1 font-semibold">
+                                ₮{subtotal.toLocaleString()}
                               </div>
                             </div>
                           </div>
@@ -362,7 +387,6 @@ export default function OrdersAdmin() {
                       })}
                     </div>
 
-                    {/* RIGHT: delivery + meta */}
                     <div className="space-y-3">
                       <div className="bg-card border border-border rounded-lg p-4">
                         <div className="text-xs text-muted-foreground mb-2">
@@ -474,7 +498,6 @@ export default function OrdersAdmin() {
                           variant="outline"
                           className="flex-1"
                           onClick={() => {
-                            // open order detail page in admin (if exists)
                             window.open(`/admin/orders/${o.id}`, "_blank");
                           }}
                         >
@@ -485,7 +508,6 @@ export default function OrdersAdmin() {
                         <Button
                           className="flex-1"
                           onClick={() => {
-                            // quick copy order summary
                             const summary = `Order ${
                               o.orderNumber ?? o.id
                             } - ₮${(o.totalPrice ?? 0).toLocaleString()}`;
@@ -503,7 +525,6 @@ export default function OrdersAdmin() {
           );
         })}
 
-      {/* pagination controls */}
       {!loading && orders.length > 0 && (
         <div className="flex items-center justify-between mt-6">
           <Button
