@@ -4,7 +4,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { uploadImage } from "@/utils/UploadImage";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 import { AddFoodForm } from "./AddFoodForm";
 import { AddFoodFooter } from "./AddFoodFooter";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
@@ -66,9 +66,12 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       setLoading(true);
 
       const uploadedImages = await Promise.all(
-        images.map((img) => uploadImage(img))
+        images.map((img) => uploadToCloudinary(img, "image"))
       );
-      const uploadedVideo = video ? await uploadImage(video) : null;
+
+      const uploadedVideo = video
+        ? await uploadToCloudinary(video, "video")
+        : null;
 
       const payload: any = {
         foodName: foodData.foodName,
@@ -99,18 +102,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div
-        className="
-          bg-card
-          text-foreground
-          p-6
-          rounded-2xl
-          w-full max-w-[640px]
-          shadow-lg
-          max-h-[90vh]
-          overflow-y-auto
-        "
-      >
+      <div className="bg-card text-foreground p-6 rounded-2xl w-full max-w-[640px] shadow-lg max-h-[90vh] overflow-y-auto">
         <AddFoodForm
           category={category}
           foodData={foodData}
@@ -121,7 +113,6 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
           setImages={setImages}
           imagePreviews={imagePreviews}
           setImagePreviews={setImagePreviews}
-          // video={video}
           setVideo={setVideo}
           videoPreview={videoPreview}
           setVideoPreview={setVideoPreview}

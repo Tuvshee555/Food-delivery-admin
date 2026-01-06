@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/utils/UploadImage.tsx
 import axios from "axios";
 

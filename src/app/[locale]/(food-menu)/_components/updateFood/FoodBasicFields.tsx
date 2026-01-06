@@ -38,7 +38,7 @@ export default function FoodBasicFields({ updatedFood, setUpdatedFood }: any) {
           className="border p-2 rounded w-full"
         />
 
-        <input
+        {/* <input
           type="number"
           value={updatedFood.discount ?? ""}
           onChange={(e) =>
@@ -46,7 +46,7 @@ export default function FoodBasicFields({ updatedFood, setUpdatedFood }: any) {
           }
           placeholder="Discount %"
           className="border p-2 rounded w-32"
-        />
+        /> */}
       </div>
 
       {/* ingredients */}
