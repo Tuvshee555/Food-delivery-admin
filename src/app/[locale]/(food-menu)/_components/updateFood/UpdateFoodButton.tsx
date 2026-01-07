@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { uploadImage } from "@/utils/UploadImage";
+import { uploadMedia } from "@/utils/uploadMedia";
 import { FoodCardPropsType, FoodType } from "@/type/type";
 
 import FoodBasicFields from "./FoodBasicFields";
@@ -73,12 +73,15 @@ export default function UpdateFoodButton({
     try {
       setLoading(true);
 
+      // 🔥 upload new main image if replaced
       const image =
         updatedFood.image instanceof File
-          ? await uploadImage(updatedFood.image)
+          ? (await uploadMedia([updatedFood.image]))[0]
           : updatedFood.image;
 
-      const newExtras = await Promise.all(extraFiles.map(uploadImage));
+      // 🔥 upload newly added extra images
+      const newExtras = extraFiles.length ? await uploadMedia(extraFiles) : [];
+
       const finalExtras = [
         ...(updatedFood.extraImages || []).filter(
           (i: any) => typeof i === "string"
@@ -86,8 +89,9 @@ export default function UpdateFoodButton({
         ...newExtras,
       ];
 
+      // 🔥 upload new video if replaced
       const video = videoFile
-        ? await uploadImage(videoFile)
+        ? (await uploadMedia([videoFile]))[0]
         : updatedFood.video;
 
       await axios.put(
@@ -109,7 +113,8 @@ export default function UpdateFoodButton({
 
       toast.success("Updated");
       refreshFood();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Update failed");
     } finally {
       setLoading(false);

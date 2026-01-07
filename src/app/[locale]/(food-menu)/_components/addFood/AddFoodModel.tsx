@@ -4,7 +4,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
+import { uploadMedia } from "@/utils/uploadMedia";
 import { AddFoodForm } from "./AddFoodForm";
 import { AddFoodFooter } from "./AddFoodFooter";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
@@ -65,13 +65,9 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     try {
       setLoading(true);
 
-      const uploadedImages = await Promise.all(
-        images.map((img) => uploadToCloudinary(img, "image"))
-      );
-
-      const uploadedVideo = video
-        ? await uploadToCloudinary(video, "video")
-        : null;
+      // 🔥 upload media via backend
+      const uploadedImages = await uploadMedia(images);
+      const uploadedVideo = video ? (await uploadMedia([video]))[0] : null;
 
       const payload: any = {
         foodName: foodData.foodName,
@@ -92,9 +88,9 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       toast.success(t("food.toast.success"));
       refreshFood();
       closeModal();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error(t("food.toast.error"));
+      toast.error(err?.message ?? t("food.toast.error"));
     } finally {
       setLoading(false);
     }
