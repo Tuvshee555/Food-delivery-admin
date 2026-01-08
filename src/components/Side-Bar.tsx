@@ -3,21 +3,25 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useI18n } from "./i18n/ClientI18nProvider";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 type Props = {
   setPage: (value: string) => void;
+  isMobile?: boolean;
+  open?: boolean;
+  onClose?: () => void;
 };
 
-export const Sidebar = ({ setPage }: Props) => {
+export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
   const { t } = useI18n();
   const [activePage, setActivePage] = useState("Food-menu");
 
   const handleClick = (page: string) => {
     setActivePage(page);
     setPage(page);
+    onClose?.();
   };
 
   const itemClass = (page: string) =>
@@ -28,25 +32,16 @@ export const Sidebar = ({ setPage }: Props) => {
       ${
         activePage === page
           ? "bg-primary text-primary-foreground"
-          : "bg-transparent text-foreground hover:bg-muted"
+          : "hover:bg-muted"
       }
     `;
 
-  return (
-    <aside
-      className="
-        w-[220px]
-        h-screen
-        px-6 py-8
-        border-r border-border
-        bg-background
-        text-foreground
-      "
-    >
+  const content = (
+    <aside className="w-[220px] h-full px-6 py-8 bg-background border-r">
       <Link href="/" className="flex items-center gap-2 mb-8">
         <img src="/order.png" className="w-8 h-8" />
-        <div className="leading-tight">
-          <div className="text-base font-semibold">NomNom</div>
+        <div>
+          <div className="font-semibold">NomNom</div>
           <div className="text-xs text-muted-foreground">
             {t("sidebar.tagline")}
           </div>
@@ -79,5 +74,18 @@ export const Sidebar = ({ setPage }: Props) => {
         </Button>
       </nav>
     </aside>
+  );
+
+  if (!isMobile) return content;
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 bg-black/40 ${open ? "block" : "hidden"}`}
+      onClick={onClose}
+    >
+      <div className="h-full" onClick={(e) => e.stopPropagation()}>
+        {content}
+      </div>
+    </div>
   );
 };

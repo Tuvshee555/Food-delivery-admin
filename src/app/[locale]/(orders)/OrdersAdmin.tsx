@@ -204,7 +204,7 @@ export default function OrdersAdmin() {
   const paged = orders.slice((page - 1) * limit, page * limit);
 
   return (
-    <div className="bg-background text-foreground p-6">
+    <div className="bg-background text-foreground p-6　w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold">{t("orders")}</h1>
         <div className="text-sm text-muted-foreground">
