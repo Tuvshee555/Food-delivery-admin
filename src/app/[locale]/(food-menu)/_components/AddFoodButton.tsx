@@ -25,7 +25,9 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
         type="button"
         onClick={() => setOpen(true)}
         className="
-          w-[240px] h-[240px]
+          w-full
+          sm:w-[240px]
+          h-[240px]
           rounded-xl
           border border-dashed border-border
           bg-background

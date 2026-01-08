@@ -27,7 +27,6 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
         gap-4
       "
     >
-      {/* Category name */}
       <h2 className="text-base font-semibold">
         {t("category_with_count", {
           name: category.categoryName,
@@ -35,8 +34,17 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
         })}
       </h2>
 
-      {/* Food cards */}
-      <div className="flex flex-wrap gap-4">
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          md:grid-cols-2
+          lg:grid-cols-3
+          xl:grid-cols-4
+          gap-4
+        "
+      >
         <AddFoodButton category={category} refreshFood={refreshFood} />
 
         {foodsInCategory.map((food) => (

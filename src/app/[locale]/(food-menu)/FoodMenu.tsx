@@ -9,6 +9,8 @@ import { CategoryTree } from "./_components/categoryThree/CategoryTree";
 import { FoodCategoryList } from "./_components/FoodCategoryList";
 import { FoodType } from "@/type/type";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import CategorySelectorButton from "./_components/components/CategorySelectorButton";
+import CategoryMobileSheet from "./_components/components/CategoryMobileSheet";
 
 type CategoryNode = {
   id: string;
@@ -27,8 +29,7 @@ export const FoodMenu = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
   );
-
-  /* ---------- helpers ---------- */
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const flattenTree = (nodes: CategoryNode[]): CategoryNode[] => {
     const result: CategoryNode[] = [];
@@ -69,8 +70,6 @@ export const FoodMenu = () => {
     Promise.all([reloadCategories(), reloadFoods()]);
   }, []);
 
-  /* ---------- derived ---------- */
-
   const selectedCategory = useMemo(
     () => flatCats.find((c) => c.id === selectedCategoryId) ?? null,
     [flatCats, selectedCategoryId]
@@ -83,50 +82,88 @@ export const FoodMenu = () => {
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground">
-      <div className="p-6 flex gap-6">
-        {/* LEFT */}
-        <aside
-          className="
-            w-[260px]
-            bg-card
-            border border-border
-            rounded-lg
-            p-4
-          "
-        >
-          <CategoryTree
-            tree={tree}
-            loading={loadingCats}
-            selectedId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-            onChanged={reloadCategories}
-          />
-        </aside>
-
-        {/* RIGHT */}
-        <main className="flex-1">
-          {!selectedCategory ? (
-            <div
-              className="
-                bg-card
-                border border-border
-                rounded-lg
-                p-8
-              "
-            >
-              <p className="text-sm text-muted-foreground">
-                {t("select_category_hint")}
-              </p>
-            </div>
-          ) : (
-            <FoodCategoryList
-              category={selectedCategory as any}
-              foodData={foodsInSelectedCategory}
-              refreshFood={reloadFoods}
+      <div className="p-6">
+        {/* Desktop: left category tree */}
+        <div className="hidden lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
+          <aside
+            className="
+              w-[260px]
+              bg-card
+              border border-border
+              rounded-lg
+              p-4
+            "
+          >
+            <CategoryTree
+              tree={tree}
+              loading={loadingCats}
+              selectedId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+              onChanged={reloadCategories}
             />
-          )}
-        </main>
+          </aside>
+
+          <main className="flex-1">
+            {!selectedCategory ? (
+              <div className="bg-card border border-border rounded-lg p-8">
+                <p className="text-sm text-muted-foreground">
+                  {t("select_category_hint")}
+                </p>
+              </div>
+            ) : (
+              <FoodCategoryList
+                category={selectedCategory as any}
+                foodData={foodsInSelectedCategory}
+                refreshFood={reloadFoods}
+              />
+            )}
+          </main>
+        </div>
+
+        {/* Mobile / tablet: category selector + content */}
+        <div className="lg:hidden">
+          <div className="mb-4">
+            <CategorySelectorButton
+              selected={selectedCategory}
+              onOpen={() => setSheetOpen(true)}
+            />
+          </div>
+
+          <main>
+            {!selectedCategory ? (
+              <div className="bg-card border border-border rounded-lg p-6">
+                <p className="text-sm text-muted-foreground">
+                  {t("select_category_hint")}
+                </p>
+              </div>
+            ) : (
+              <FoodCategoryList
+                category={selectedCategory as any}
+                foodData={foodsInSelectedCategory}
+                refreshFood={reloadFoods}
+              />
+            )}
+          </main>
+        </div>
       </div>
+
+      <CategoryMobileSheet open={sheetOpen} onClose={() => setSheetOpen(false)}>
+        <div className="p-4">
+          <h3 className="text-sm font-semibold mb-3">{t("categories")}</h3>
+          <div className="max-h-[60vh] overflow-auto pr-2">
+            <CategoryTree
+              tree={tree}
+              loading={loadingCats}
+              selectedId={selectedCategoryId}
+              onSelect={(id) => {
+                setSelectedCategoryId(id);
+                setSheetOpen(false);
+              }}
+              onChanged={reloadCategories}
+            />
+          </div>
+        </div>
+      </CategoryMobileSheet>
     </div>
   );
 };

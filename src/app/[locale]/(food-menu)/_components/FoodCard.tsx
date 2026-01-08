@@ -2,7 +2,6 @@
 "use client";
 
 import { FoodCardPropsType } from "@/type/type";
-// import { UpdateFoodButton } from "./UpdateFood-Button";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
 import UpdateFoodButton from "./updateFood/UpdateFoodButton";
 
@@ -21,9 +20,10 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
         border border-border
         rounded-2xl
         p-4
-        flex flex-col items-center
-        w-[241px]
+        flex flex-col
         gap-4
+        w-full
+        max-w-[320px]
       "
     >
       <div className="relative w-full">
@@ -35,7 +35,7 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
               ? URL.createObjectURL(food.image)
               : ""
           }
-          className="w-full h-[130px] rounded-xl object-cover"
+          className="w-full h-[140px] rounded-xl object-cover"
           alt={food.foodName}
         />
 
