@@ -6,6 +6,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type Props = {
   setPage: (value: string) => void;
@@ -16,17 +22,18 @@ type Props = {
 
 export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
   const { t } = useI18n();
-  const [activePage, setActivePage] = useState("Food-menu");
+  const [activePage, setActivePage] = useState("Home");
 
   const handleClick = (page: string) => {
     setActivePage(page);
     setPage(page);
-    onClose?.();
+    onClose?.(); // ✅ close after click
   };
 
   const itemClass = (page: string) =>
     `
       h-[44px]
+      w-full
       justify-start
       rounded-md
       ${
@@ -37,7 +44,7 @@ export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
     `;
 
   const content = (
-    <aside className="w-[220px] h-full px-6 py-8 bg-background border-r">
+    <aside className="w-[220px] h-full px-6 py-8 bg-background ">
       <Link href="/" className="flex items-center gap-2 mb-8">
         <img src="/order.png" className="w-8 h-8" />
         <div>
@@ -54,7 +61,7 @@ export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
           className={itemClass("Food-menu")}
           onClick={() => handleClick("Food-menu")}
         >
-          {t("sidebar.food_menu")}
+          {t("sidebar.home")}
         </Button>
 
         <Button
@@ -76,16 +83,20 @@ export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
     </aside>
   );
 
+  // ✅ Desktop
   if (!isMobile) return content;
 
+  // ✅ Mobile (shadcn Sheet)
   return (
-    <div
-      className={`fixed inset-0 z-50 bg-black/40 ${open ? "block" : "hidden"}`}
-      onClick={onClose}
-    >
-      <div className="h-full" onClick={(e) => e.stopPropagation()}>
+    <Sheet open={!!open} onOpenChange={(v) => (!v ? onClose?.() : null)}>
+      <SheetContent side="left" className="p-0 w-[260px]">
+        {/* ✅ Required title for accessibility (no UI impact) */}
+        <SheetHeader className="sr-only">
+          <SheetTitle>{t("sidebar.title")}</SheetTitle>
+        </SheetHeader>
+
         {content}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
