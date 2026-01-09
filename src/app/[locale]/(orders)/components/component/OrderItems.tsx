@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { FoodItem, PLACEHOLDER } from "./type";
+import { FoodItem, PLACEHOLDER } from "../type";
 
 type Props = {
   items?: FoodItem[];
@@ -11,7 +11,7 @@ type Props = {
 
 export function OrderItems({ items = [], orderId, t }: Props) {
   return (
-    <div className="md:col-span-2 space-y-3">
+    <div className="space-y-3">
       {items.length === 0 && (
         <div className="text-sm text-muted-foreground">{t("no_items")}</div>
       )}
@@ -41,7 +41,7 @@ export function OrderItems({ items = [], orderId, t }: Props) {
                 {food?.foodName ?? "(no name)"}
               </div>
               <div className="text-xs text-muted-foreground">
-                id: {food?.id ?? "(none)"} {" • "}
+                id: {food?.id ?? "(none)"} •{" "}
                 {food?.categoryId ? `cat: ${food.categoryId}` : "cat: (none)"}
               </div>
             </div>
