@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import RevenueDashboard from "@/components/stats/RevenueDashboard";
+import RevenueDashboard from "@/app/[locale]/(revenue)/RevenueDashboard";
 import { FoodMenu } from "../(food-menu)/FoodMenu";
 import OrdersAdmin from "../(orders)/OrdersAdmin";
 
