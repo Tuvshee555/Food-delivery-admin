@@ -7,21 +7,46 @@ type Props = {
   t: (key: string) => string;
   loading: boolean;
   onRefresh: () => void;
+  range: "7d" | "30d";
+  setRange: (r: "7d" | "30d") => void;
 };
 
-export function DashboardHeader({ t, loading, onRefresh }: Props) {
+export function DashboardHeader({
+  t,
+  loading,
+  onRefresh,
+  range,
+  setRange,
+}: Props) {
   return (
-    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <h1 className="text-lg font-semibold">{t("dashboard")}</h1>
+    <div className="flex flex-wrap items-center gap-3 justify-between">
+      <h1 className="text-xl font-semibold">{t("dashboard")}</h1>
 
-      <Button
-        onClick={onRefresh}
-        disabled={loading}
-        className="inline-flex items-center gap-2 self-start md:self-auto"
-      >
-        <RefreshCcw className="w-4 h-4" />
-        {t("refresh")}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant={range === "7d" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setRange("7d")}
+        >
+          7D
+        </Button>
+        <Button
+          variant={range === "30d" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setRange("30d")}
+        >
+          30D
+        </Button>
+
+        <Button
+          onClick={onRefresh}
+          disabled={loading}
+          size="sm"
+          variant="outline"
+        >
+          <RefreshCcw className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }

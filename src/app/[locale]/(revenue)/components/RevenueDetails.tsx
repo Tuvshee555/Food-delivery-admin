@@ -10,27 +10,30 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Payment } from "../RevenueDashboard";
+import { OrderStatus, STATUS_BADGE } from "../../(orders)/components/type";
 
 type Props = {
   t: (key: string) => string;
   chartData: { date: string; revenue: number }[];
   payments: Payment[];
+  loading: boolean;
 };
 
-export function RevenueDetails({ t, chartData, payments }: Props) {
+export function RevenueDetails({ t, chartData, payments, loading }: Props) {
   const hasRevenue = chartData.some((d) => d.revenue > 0);
 
   return (
     <div className="space-y-6">
       {/* CHART */}
-      <Card className="border border-border">
+      <Card>
         <CardHeader>
           <CardTitle className="text-sm">{t("last_7_days")}</CardTitle>
         </CardHeader>
-
         <CardContent>
           <div className="h-[260px] w-full">
-            {hasRevenue ? (
+            {loading ? (
+              <div className="h-full bg-muted rounded" />
+            ) : hasRevenue ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <XAxis dataKey="date" />
@@ -41,7 +44,8 @@ export function RevenueDetails({ t, chartData, payments }: Props) {
                     dataKey="revenue"
                     stroke="hsl(var(--foreground))"
                     strokeWidth={2}
-                    dot={false}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -55,11 +59,10 @@ export function RevenueDetails({ t, chartData, payments }: Props) {
       </Card>
 
       {/* PAYMENTS */}
-      <Card className="border border-border">
+      <Card>
         <CardHeader>
           <CardTitle className="text-sm">{t("recent_payments")}</CardTitle>
         </CardHeader>
-
         <CardContent className="divide-y divide-border">
           {payments.length > 0 ? (
             payments.map((p) => (
@@ -74,19 +77,17 @@ export function RevenueDetails({ t, chartData, payments }: Props) {
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-right space-y-1">
                   <div className="font-medium">
                     {p.amount.toLocaleString()} ₮
                   </div>
-                  <div
-                    className={`text-xs ${
-                      p.status === "PAID"
-                        ? "text-emerald-600"
-                        : "text-muted-foreground"
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                      STATUS_BADGE[p.status as OrderStatus]
                     }`}
                   >
-                    {p.status}
-                  </div>
+                    {t(`order_status.${p.status}`)}
+                  </span>
                 </div>
               </div>
             ))
