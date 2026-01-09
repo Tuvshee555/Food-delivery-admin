@@ -157,7 +157,8 @@
     "DELIVERING": "Delivering",
     "DELIVERED": "Delivered",
     "CANCELLED": "Cancelled"
-  }
+  },
+  "no_revenue_last_7_days": "No revenue in the last 7 days"
 
 
 

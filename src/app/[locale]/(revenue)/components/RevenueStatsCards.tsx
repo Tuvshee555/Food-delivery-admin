@@ -11,46 +11,46 @@ type Props = {
 
 export function RevenueStatsCards({ t, stats }: Props) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <Card className="border border-border">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
             <DollarSign className="w-4 h-4" />
             {t("total_revenue")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-semibold">
+          <div className="text-xl font-semibold">
             {stats ? stats.totalRevenue.toLocaleString() : "-"} ₮
-          </p>
+          </div>
         </CardContent>
       </Card>
 
       <Card className="border border-border">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
             <CalendarDays className="w-4 h-4" />
             {t("this_month")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-semibold">
+          <div className="text-xl font-semibold">
             {stats ? stats.monthlyRevenue.toLocaleString() : "-"} ₮
-          </p>
+          </div>
         </CardContent>
       </Card>
 
       <Card className="border border-border">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm">
             <TrendingUp className="w-4 h-4" />
             {t("this_week")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-semibold">
+          <div className="text-xl font-semibold">
             {stats ? stats.weeklyRevenue.toLocaleString() : "-"} ₮
-          </p>
+          </div>
         </CardContent>
       </Card>
     </div>

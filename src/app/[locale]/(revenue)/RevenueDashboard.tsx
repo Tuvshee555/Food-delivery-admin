@@ -54,7 +54,7 @@ export default function RevenueDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8 flex flex-col gap-8">
+    <div className="w-full max-w-full overflow-x-hidden bg-background text-foreground px-4 py-4 md:p-6 space-y-6">
       <DashboardHeader t={t} loading={loading} onRefresh={fetchStats} />
 
       <RevenueStatsCards t={t} stats={stats} />

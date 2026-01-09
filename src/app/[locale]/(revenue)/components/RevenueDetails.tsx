@@ -18,81 +18,85 @@ type Props = {
 };
 
 export function RevenueDetails({ t, chartData, payments }: Props) {
+  const hasRevenue = chartData.some((d) => d.revenue > 0);
+
   return (
-    <>
+    <div className="space-y-6">
+      {/* CHART */}
       <Card className="border border-border">
         <CardHeader>
           <CardTitle className="text-sm">{t("last_7_days")}</CardTitle>
         </CardHeader>
+
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="hsl(var(--foreground))"
-                strokeWidth={2}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="h-[260px] w-full">
+            {hasRevenue ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--foreground))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+                {t("no_revenue_last_7_days")}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
+      {/* PAYMENTS */}
       <Card className="border border-border">
         <CardHeader>
           <CardTitle className="text-sm">{t("recent_payments")}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm border border-border">
-              <thead className="bg-muted text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2 text-left">{t("order_id")}</th>
-                  <th className="px-4 py-2 text-left">{t("amount")}</th>
-                  <th className="px-4 py-2 text-left">{t("status")}</th>
-                  <th className="px-4 py-2 text-left">{t("date")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.length > 0 ? (
-                  payments.map((p) => (
-                    <tr key={p.id} className="border-t border-border">
-                      <td className="px-4 py-2">{p.orderId}</td>
-                      <td className="px-4 py-2">
-                        {p.amount.toLocaleString()} ₮
-                      </td>
-                      <td
-                        className={`px-4 py-2 font-medium ${
-                          p.status === "PAID"
-                            ? "text-emerald-600"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {p.status}
-                      </td>
-                      <td className="px-4 py-2">
-                        {new Date(p.createdAt).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="text-center py-4 text-muted-foreground"
-                    >
-                      {t("no_payments")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+
+        <CardContent className="divide-y divide-border">
+          {payments.length > 0 ? (
+            payments.map((p) => (
+              <div
+                key={p.id}
+                className="py-3 flex items-center justify-between text-sm"
+              >
+                <div className="min-w-0">
+                  <div className="font-medium truncate">{p.orderId}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(p.createdAt).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-medium">
+                    {p.amount.toLocaleString()} ₮
+                  </div>
+                  <div
+                    className={`text-xs ${
+                      p.status === "PAID"
+                        ? "text-emerald-600"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {p.status}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              {t("no_payments")}
+            </div>
+          )}
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
