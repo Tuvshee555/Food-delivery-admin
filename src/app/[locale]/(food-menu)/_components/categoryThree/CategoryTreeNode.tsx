@@ -2,9 +2,12 @@
 
 import axios from "axios";
 import { ChevronRight, ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { CategoryNode } from "./types";
 import { AddCategoryButton } from "../AddCategoryButton";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { RenameDialog } from "./components/RenameDialog";
+import { DeleteDialog } from "./components/DeleteDialog";
 
 type Props = {
   node: CategoryNode;
@@ -27,27 +30,32 @@ export const CategoryTreeNode: React.FC<Props> = ({
 }) => {
   const { t } = useI18n();
 
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
   const hasChildren = node.children && node.children.length > 0;
   const isOpen = expanded[node.id] ?? true;
   const isSelected = selectedId === node.id;
 
-  const handleRename = async () => {
-    const newName = window.prompt(t("rename_prompt"), node.categoryName);
-    if (!newName || !newName.trim()) return;
+  /* ------------------ RENAME ------------------ */
+  const handleRenameConfirm = async (newName: string) => {
+    if (!newName.trim() || newName === node.categoryName) {
+      setRenameOpen(false);
+      return;
+    }
 
     await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
       id: node.id,
       categoryName: newName.trim(),
     });
 
+    setRenameOpen(false);
     onChanged();
   };
 
-  const handleDelete = async () => {
-    const sure = window.confirm(
-      t("delete_confirm", { name: node.categoryName })
-    );
-    if (!sure) return;
+  /* ------------------ DELETE ------------------ */
+  const handleDeleteConfirm = async () => {
+    setDeleteOpen(false);
 
     await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
       data: { id: node.id },
@@ -61,9 +69,7 @@ export const CategoryTreeNode: React.FC<Props> = ({
       <div
         className={`
           flex items-center justify-between
-          rounded-md
-          px-2 py-1
-          text-sm
+          rounded-md px-2 py-1 text-sm
           cursor-pointer
           ${
             isSelected
@@ -73,8 +79,9 @@ export const CategoryTreeNode: React.FC<Props> = ({
         `}
         style={{ paddingLeft: 8 + depth * 12 }}
       >
+        {/* LEFT */}
         <div
-          className="flex items-center gap-1 flex-1"
+          className="flex items-center gap-1 flex-1 min-w-0"
           onClick={() => onSelect(node.id)}
         >
           {hasChildren ? (
@@ -99,6 +106,7 @@ export const CategoryTreeNode: React.FC<Props> = ({
           <span className="truncate">{node.categoryName}</span>
         </div>
 
+        {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-1">
           <AddCategoryButton
             parentId={node.id}
@@ -107,22 +115,25 @@ export const CategoryTreeNode: React.FC<Props> = ({
             onCreated={onChanged}
           />
 
+          {/* ✏️ RENAME */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleRename();
+              setRenameOpen(true);
             }}
             className="h-[28px] w-[28px] flex items-center justify-center rounded hover:bg-muted"
+            title={t("rename_prompt")}
           >
             <Pencil className="w-3 h-3" />
           </button>
 
+          {/* 🗑 DELETE */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete();
+              setDeleteOpen(true);
             }}
             className="h-[28px] w-[28px] flex items-center justify-center rounded hover:bg-muted text-destructive"
           >
@@ -131,6 +142,26 @@ export const CategoryTreeNode: React.FC<Props> = ({
         </div>
       </div>
 
+      {/* RENAME DIALOG */}
+      <RenameDialog
+        open={renameOpen}
+        initialValue={node.categoryName}
+        title={t("rename_prompt")}
+        placeholder={t("category.name")}
+        onCancel={() => setRenameOpen(false)}
+        onConfirm={handleRenameConfirm}
+      />
+
+      {/* DELETE DIALOG */}
+      <DeleteDialog
+        open={deleteOpen}
+        title={t("delete_confirm", { name: node.categoryName })}
+        description={t("delete_category_description") ?? ""}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      {/* CHILDREN */}
       {hasChildren && isOpen && (
         <div className="mt-1">
           {node.children!.map((child) => (

@@ -40,10 +40,10 @@ export function OrderExpandedDetails({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 md:flex-row">
           <Button
             variant="outline"
-            className="flex-1"
+            className="md:flex-1"
             onClick={() => window.open(`/admin/orders/${order.id}`, "_blank")}
           >
             <FileText className="w-4 h-4 mr-2" />
@@ -51,7 +51,7 @@ export function OrderExpandedDetails({
           </Button>
 
           <Button
-            className="flex-1"
+            className="md:flex-1"
             onClick={() => {
               const summary = `Order ${order.orderNumber ?? order.id} - ₮${(
                 order.totalPrice ?? 0

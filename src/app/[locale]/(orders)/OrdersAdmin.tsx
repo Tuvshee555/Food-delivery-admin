@@ -8,6 +8,7 @@ import { useOrdersAdmin } from "./components/function/useOrdersAdmin";
 
 export default function OrdersAdmin() {
   const { t } = useI18n();
+
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -27,38 +28,47 @@ export default function OrdersAdmin() {
   } = useOrdersAdmin(token, t);
 
   return (
-    <div className="bg-background text-foreground p-6">
+    <div className="w-full max-w-full overflow-x-hidden bg-background text-foreground px-4 py-4 md:p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold">{t("orders")}</h1>
+
         <div className="text-sm text-muted-foreground">
           {t("page_of", { page, total: totalPages })}
         </div>
       </div>
 
-      {loading && <p className="text-muted-foreground">{t("loading")}</p>}
+      {/* Loading */}
+      {loading && (
+        <p className="text-sm text-muted-foreground">{t("loading")}</p>
+      )}
+
+      {/* Error */}
       {fetchError && (
-        <div className="bg-destructive/10 text-destructive p-3 rounded">
+        <div className="bg-destructive/10 text-destructive p-3 rounded-lg mb-4">
           {fetchError}
         </div>
       )}
 
+      {/* Empty */}
       {!loading && !fetchError && paged.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           {t("orders_empty")}
         </div>
       )}
 
+      {/* Orders */}
       {!loading &&
-        paged.map((o, idx) => {
-          const items = o.foodOrderItems ?? o.items ?? [];
+        paged.map((order, idx) => {
+          const items = order.foodOrderItems ?? order.items ?? [];
 
           return (
             <section
-              key={o.id}
-              className="bg-card border border-border rounded-2xl overflow-hidden mb-5"
+              key={order.id}
+              className="w-full max-w-full bg-card border border-border rounded-2xl overflow-hidden mb-5"
             >
               <OrderHeader
-                order={o}
+                order={order}
                 idx={idx}
                 page={page}
                 limit={limit}
@@ -70,9 +80,9 @@ export default function OrdersAdmin() {
               />
 
               <OrderExpandedDetails
-                order={o}
-                expanded={expanded.has(o.id)}
-                items={o.items ?? o.foodOrderItems}
+                order={order}
+                expanded={expanded.has(order.id)}
+                items={items}
                 t={t}
                 copy={copy}
               />
@@ -80,6 +90,7 @@ export default function OrdersAdmin() {
           );
         })}
 
+      {/* Pagination */}
       <PaginationControls
         loading={loading}
         hasData={orders.length > 0}

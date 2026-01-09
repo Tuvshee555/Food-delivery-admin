@@ -14,24 +14,31 @@ export default function AdminLayout({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:block w-[220px] border-r">
-        <Sidebar setPage={setPage} />
-      </aside>
+    <div className="min-h-screen w-full overflow-x-hidden">
+      {/* Desktop layout */}
+      <div className="hidden md:flex min-h-screen">
+        <aside className="w-[220px] border-r shrink-0">
+          <Sidebar setPage={setPage} />
+        </aside>
 
-      {/* Top bar (mobile + desktop) */}
-      <AdminTopBar onMenu={() => setOpen(true)} />
+        <main className="flex-1 p-4">{children}</main>
+      </div>
 
-      {/* Mobile drawer */}
-      <Sidebar
-        setPage={setPage}
-        isMobile
-        open={open}
-        onClose={() => setOpen(false)}
-      />
+      {/* Mobile layout */}
+      <div className="md:hidden">
+        <AdminTopBar onMenu={() => setOpen(true)} />
 
-      <main className="flex-1 pt-14 md:pt-4 p-4">{children}</main>
+        <Sidebar
+          setPage={setPage}
+          isMobile
+          open={open}
+          onClose={() => setOpen(false)}
+        />
+
+        <main className="pt-14 px-4 pb-4 w-full overflow-x-hidden">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

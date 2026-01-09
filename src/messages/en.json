@@ -148,7 +148,16 @@
   "no_email": "No email",
   "unit_price": "Unit price",
   "quantity": "Quantity",
-  "subtotal": "Subtotal"
+  "subtotal": "Subtotal",
+  "order_status": {
+    "PENDING": "Pending",
+    "WAITING_PAYMENT": "Waiting payment",
+    "COD_PENDING": "Cash on delivery",
+    "PAID": "Paid",
+    "DELIVERING": "Delivering",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
+  }
 
 
 

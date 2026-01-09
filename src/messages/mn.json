@@ -150,7 +150,16 @@
   "no_email": "И-мэйл байхгүй",
   "unit_price": "Нэгж үнэ",
   "quantity": "Тоо ширхэг",
-  "subtotal": "Нийт дүн"
+  "subtotal": "Нийт дүн",
+  "order_status": {
+    "PENDING": "Хүлээгдэж байна",
+    "WAITING_PAYMENT": "Төлбөр хүлээж байна",
+    "COD_PENDING": "Бэлнээр төлөх",
+    "PAID": "Төлөгдсөн",
+    "DELIVERING": "Хүргэлтэнд гарсан",
+    "DELIVERED": "Хүргэгдсэн",
+    "CANCELLED": "Цуцлагдсан"
+  }
 
 
 
