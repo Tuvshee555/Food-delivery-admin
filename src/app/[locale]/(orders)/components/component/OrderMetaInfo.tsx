@@ -7,34 +7,61 @@ type Props = {
   order: any;
   t: (key: string) => string;
   copy: (value: string) => void;
-  Row: any;
 };
 
-export function OrderMetaInfo({ order, t, copy, Row }: Props) {
+export function OrderMetaInfo({ order, t, copy }: Props) {
+  const Item = ({
+    label,
+    children,
+    action,
+  }: {
+    label: string;
+    children: React.ReactNode;
+    action?: React.ReactNode;
+  }) => (
+    <div className="flex justify-between gap-6 py-3">
+      <div className="text-sm font-medium text-foreground whitespace-nowrap">
+        {label}
+      </div>
+      <div className="flex items-center gap-2 text-sm text-foreground text-right">
+        {children}
+        {action}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="bg-card border border-border rounded-lg p-3 text-sm">
-      <Row label={t("order_id")}>{order?.id ?? "-"}</Row>
+    <div className="bg-card border border-border rounded-lg px-5 py-4">
+      <div className="text-sm font-semibold mb-4 text-foreground">
+        {t("order")}
+      </div>
 
-      {order?.orderNumber && (
-        <Row label={t("order_number")}>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">#{order.orderNumber}</span>
-            <button
-              onClick={() => copy(order.orderNumber)}
-              className="text-xs text-muted-foreground flex items-center gap-1"
-            >
-              <Copy className="w-3 h-3" />
-              {t("copy")}
-            </button>
-          </div>
-        </Row>
-      )}
+      <div className="divide-y divide-border">
+        <Item label={t("order_id")}>{order?.id ?? "-"}</Item>
 
-      <Row label={t("created_at")}>
-        {order?.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}
-      </Row>
+        {order?.orderNumber && (
+          <Item
+            label={t("order_number")}
+            action={
+              <button
+                onClick={() => copy(order.orderNumber)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-foreground"
+              >
+                <Copy className="w-3 h-3" />
+                {t("copy")}
+              </button>
+            }
+          >
+            #{order.orderNumber}
+          </Item>
+        )}
 
-      <Row label={t("payment_method")}>{order?.paymentMethod ?? "-"}</Row>
+        <Item label={t("created_at")}>
+          {order?.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}
+        </Item>
+
+        <Item label={t("payment_method")}>{order?.paymentMethod ?? "-"}</Item>
+      </div>
     </div>
   );
 }

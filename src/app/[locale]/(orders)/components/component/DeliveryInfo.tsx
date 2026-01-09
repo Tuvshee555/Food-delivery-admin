@@ -7,42 +7,64 @@ type Props = {
   delivery?: any;
   t: (key: string) => string;
   copy: (value: string) => void;
-  Row: any;
-  Block: any;
 };
 
-export function DeliveryInfo({ delivery, t, copy, Row, Block }: Props) {
+export function DeliveryInfo({ delivery, t, copy }: Props) {
+  const Item = ({
+    label,
+    children,
+    action,
+  }: {
+    label: string;
+    children: React.ReactNode;
+    action?: React.ReactNode;
+  }) => (
+    <div className="flex justify-between gap-6 py-3">
+      <div className="text-sm font-medium text-foreground whitespace-nowrap">
+        {label}
+      </div>
+      <div className="flex items-center gap-2 text-sm text-foreground text-right">
+        {children}
+        {action}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
-      <div className="text-xs text-muted-foreground mb-2">{t("delivery")}</div>
+    <div className="bg-card border border-border rounded-lg px-5 py-4">
+      <div className="text-sm font-semibold mb-4 text-foreground">
+        {t("delivery")}
+      </div>
 
-      <div className="text-sm">
-        <Row label={t("name")}>
+      <div className="divide-y divide-border">
+        <Item label={t("name")}>
           {delivery?.firstName ?? ""} {delivery?.lastName ?? ""}
-        </Row>
+        </Item>
 
-        <Row label={t("phone")}>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{delivery?.phone ?? "-"}</span>
-            {delivery?.phone && (
+        <Item
+          label={t("phone")}
+          action={
+            delivery?.phone && (
               <button
                 onClick={() => copy(delivery.phone)}
-                className="text-xs text-muted-foreground flex items-center gap-1"
+                className="inline-flex items-center gap-1 text-xs font-medium text-foreground"
               >
                 <Copy className="w-3 h-3" />
                 {t("copy")}
               </button>
-            )}
-          </div>
-        </Row>
+            )
+          }
+        >
+          {delivery?.phone ?? "-"}
+        </Item>
 
-        <Row label={t("city")}>{delivery?.city ?? "-"}</Row>
-        <Row label={t("district")}>{delivery?.district ?? "-"}</Row>
-        <Row label={t("khoroo")}>{delivery?.khoroo ?? "-"}</Row>
+        <Item label={t("city")}>{delivery?.city ?? "-"}</Item>
+        <Item label={t("district")}>{delivery?.district ?? "-"}</Item>
+        <Item label={t("khoroo")}>{delivery?.khoroo ?? "-"}</Item>
 
-        <Block label={t("address")}>{delivery?.address ?? "-"}</Block>
+        <Item label={t("address")}>{delivery?.address ?? "-"}</Item>
 
-        {delivery?.notes && <Block label={t("notes")}>{delivery.notes}</Block>}
+        {delivery?.notes && <Item label={t("notes")}>{delivery.notes}</Item>}
       </div>
     </div>
   );

@@ -33,17 +33,11 @@ export function OrderExpandedDetails({
         {/* Items */}
         <OrderItems items={items} orderId={order.id} t={t} />
 
-        {/* Delivery */}
-        <DeliveryInfo
-          delivery={delivery}
-          t={t}
-          copy={copy}
-          Row={Row}
-          Block={Block}
-        />
-
-        {/* Order meta */}
-        <OrderMetaInfo order={order} t={t} copy={copy} Row={Row} />
+        {/* Meta */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+          <DeliveryInfo delivery={delivery} t={t} copy={copy} />
+          <OrderMetaInfo order={order} t={t} copy={copy} />
+        </div>
 
         {/* Actions */}
         <div className="flex gap-2">
@@ -69,38 +63,6 @@ export function OrderExpandedDetails({
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-/* helpers */
-
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex justify-between gap-4 mt-2">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-right">{children}</span>
-    </div>
-  );
-}
-
-function Block({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mt-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-sm">{children}</div>
     </div>
   );
 }

@@ -145,7 +145,10 @@
   "view_details": "View details",
   "copy_summary": "Copy summary",
 
-  "no_email": "No email"
+  "no_email": "No email",
+  "unit_price": "Unit price",
+  "quantity": "Quantity",
+  "subtotal": "Subtotal"
 
 
 

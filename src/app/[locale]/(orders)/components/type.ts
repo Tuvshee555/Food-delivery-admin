@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type OrderStatus =
   | "PENDING"
   | "WAITING_PAYMENT"
@@ -20,6 +21,7 @@ export type FoodItem = {
 };
 
 export type RawOrder = {
+  __expanded: any;
   id: string;
   orderNumber?: string;
   totalPrice?: number;
