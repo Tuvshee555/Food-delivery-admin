@@ -23,27 +23,27 @@ export function DashboardHeader({
       <h1 className="text-xl font-semibold">{t("dashboard")}</h1>
 
       <div className="flex items-center gap-2">
-        <Button
-          variant={range === "7d" ? "default" : "outline"}
-          size="sm"
+        <button
           onClick={() => setRange("7d")}
+          className={`px-3 py-1 text-xs rounded-full border ${
+            range === "7d" ? "bg-foreground text-background" : "text-foreground"
+          }`}
         >
           7D
-        </Button>
-        <Button
-          variant={range === "30d" ? "default" : "outline"}
-          size="sm"
+        </button>
+
+        <button
           onClick={() => setRange("30d")}
+          className={`px-3 py-1 text-xs rounded-full border ${
+            range === "30d"
+              ? "bg-foreground text-background"
+              : "text-foreground"
+          }`}
         >
           30D
-        </Button>
+        </button>
 
-        <Button
-          onClick={onRefresh}
-          disabled={loading}
-          size="sm"
-          variant="outline"
-        >
+        <Button onClick={onRefresh} disabled={loading} className="ml-2">
           <RefreshCcw className="w-4 h-4" />
         </Button>
       </div>

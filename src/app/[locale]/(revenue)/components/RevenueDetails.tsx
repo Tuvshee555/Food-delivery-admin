@@ -9,13 +9,23 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Payment } from "../RevenueDashboard";
-import { OrderStatus, STATUS_BADGE } from "../../(orders)/components/type";
+import { PaymentLike } from "../RevenueDashboard";
+
+/* local copy of STATUS_BADGE to match your project colors */
+const STATUS_BADGE: Record<string, string> = {
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
+  WAITING_PAYMENT: "bg-orange-50 text-orange-700 border-orange-200",
+  COD_PENDING: "bg-sky-50 text-sky-700 border-sky-200",
+  PAID: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  DELIVERING: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  DELIVERED: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  CANCELLED: "bg-rose-50 text-rose-700 border-rose-200",
+};
 
 type Props = {
   t: (key: string) => string;
   chartData: { date: string; revenue: number }[];
-  payments: Payment[];
+  payments: PaymentLike[];
   loading: boolean;
 };
 
@@ -24,47 +34,49 @@ export function RevenueDetails({ t, chartData, payments, loading }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* CHART */}
-      <Card>
+      {/* Chart card */}
+      <Card className="border border-border">
         <CardHeader>
           <CardTitle className="text-sm">{t("last_7_days")}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[260px] w-full">
-            {loading ? (
-              <div className="h-full bg-muted rounded" />
-            ) : hasRevenue ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(var(--foreground))"
-                    strokeWidth={2}
-                    dot={{ r: 2 }}
-                    activeDot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                {t("no_revenue_last_7_days")}
-              </div>
-            )}
-          </div>
+
+        <CardContent className="h-[260px]">
+          {loading ? (
+            <div className="h-full animate-pulse bg-muted rounded" />
+          ) : hasRevenue ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="hsl(var(--foreground))"
+                  strokeWidth={2}
+                  dot={{ r: 2 }}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+              {t("no_paid_revenue")}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* PAYMENTS */}
-      <Card>
+      {/* Payments list */}
+      <Card className="border border-border">
         <CardHeader>
           <CardTitle className="text-sm">{t("recent_payments")}</CardTitle>
         </CardHeader>
+
         <CardContent className="divide-y divide-border">
-          {payments.length > 0 ? (
+          {loading ? (
+            <div className="h-24 animate-pulse bg-muted rounded" />
+          ) : payments.length ? (
             payments.map((p) => (
               <div
                 key={p.id}
@@ -77,23 +89,23 @@ export function RevenueDetails({ t, chartData, payments, loading }: Props) {
                   </div>
                 </div>
 
-                <div className="text-right space-y-1">
+                <div className="text-right">
                   <div className="font-medium">
-                    {p.amount.toLocaleString()} ₮
+                    ₮{p.amount.toLocaleString()}
                   </div>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-                      STATUS_BADGE[p.status as OrderStatus]
+                  <div
+                    className={`text-xs px-2 py-0.5 rounded-full border font-medium mt-1 ${
+                      STATUS_BADGE[p.status] ?? ""
                     }`}
                   >
                     {t(`order_status.${p.status}`)}
-                  </span>
+                  </div>
                 </div>
               </div>
             ))
           ) : (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              {t("no_payments")}
+              {t("no_paid_revenue")}
             </div>
           )}
         </CardContent>
