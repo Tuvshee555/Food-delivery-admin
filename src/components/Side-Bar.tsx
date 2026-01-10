@@ -48,7 +48,7 @@ export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
   const content = (
     <aside className="w-[220px] h-full px-6 py-8 bg-background ">
       <Link href="/" className="flex items-center gap-2 mb-8">
-        <img src="/order.png" className="w-8 h-8" />
+        <img src="/order.png" className="w-8 h-8 rounded-sm" />
         <div>
           <div className="font-semibold">NomNom</div>
           <div className="text-xs text-muted-foreground">
