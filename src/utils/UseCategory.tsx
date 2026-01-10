@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
@@ -12,9 +13,9 @@ export const useCa = () => {
         category
       );
       toast("So easy added category");
-      console.log(response);
+      // console.log(response);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       toast.error("Failed to add category");
     }
   };

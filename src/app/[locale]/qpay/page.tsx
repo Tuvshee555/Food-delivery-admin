@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect } from "react";
@@ -33,9 +34,9 @@ export default function QPayPage() {
       setQrImage(`data:image/png;base64,${data.qr_image}`);
       setInvoiceId(data.invoice_id);
       setStatus("⌛ Waiting for payment...");
-      console.log("QPay token response:", res);
+      // console.log("QPay token response:", res);
     } catch (err: any) {
-      console.error("Create payment error:", err.message);
+      // console.error("Create payment error:", err.message);
       setStatus("❌ Failed to create payment");
     } finally {
       setLoading(false);
@@ -65,7 +66,7 @@ export default function QPayPage() {
           clearInterval(interval);
         }
       } catch (err: any) {
-        console.error("Check payment error:", err.message);
+        // console.error("Check payment error:", err.message);
         setStatus("⚠️ Checking payment failed, retrying...");
       }
     }, 5000);

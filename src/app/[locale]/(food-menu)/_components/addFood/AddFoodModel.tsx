@@ -89,7 +89,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       refreshFood();
       closeModal();
     } catch (err: any) {
-      console.error(err);
+      // console.error(err);
       toast.error(err?.message ?? t("food.toast.error"));
     } finally {
       setLoading(false);

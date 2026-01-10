@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -136,7 +137,7 @@ export default function RevenueDashboard() {
 
       setTrend(calcTrend(lastTotal, prevTotal));
     } catch (err) {
-      console.error("fetch orders for revenue error", err);
+      // console.error("fetch orders for revenue error", err);
       setStats(null);
       setPayments([]);
       setChartData([]);

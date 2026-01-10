@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
@@ -38,7 +39,7 @@ export function useOrdersAdmin(
         else setOrders([]);
       })
       .catch((err) => {
-        console.error("fetch orders error", err?.response ?? err);
+        // console.error("fetch orders error", err?.response ?? err);
         setFetchError(t("fetch_failed"));
         setOrders([]);
       })
@@ -96,7 +97,7 @@ export function useOrdersAdmin(
         rollback[idx] = before;
         return rollback;
       });
-      console.error("status update error", err ?? err);
+      // console.error("status update error", err ?? err);
       toast.error(t("status_update_failed"));
     }
   };

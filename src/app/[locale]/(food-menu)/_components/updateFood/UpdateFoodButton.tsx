@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -114,7 +115,7 @@ export default function UpdateFoodButton({
       toast.success("Updated");
       refreshFood();
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       toast.error("Update failed");
     } finally {
       setLoading(false);

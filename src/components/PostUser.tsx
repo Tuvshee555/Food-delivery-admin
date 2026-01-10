@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { User } from "@/type/type";
@@ -35,7 +36,7 @@ export const PostUser = () => {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/user`,
         user
       );
-      console.log("Created admin", response.data);
+      // console.log("Created admin", response.data);
       toast.success("Welcome aboard! You can now log in.");
       router.push("/log-in");
     } catch (err) {
@@ -48,7 +49,7 @@ export const PostUser = () => {
         toast.error("Something went wrong");
       }
 
-      console.error(error);
+      // console.error(error);
     }
   };
 
