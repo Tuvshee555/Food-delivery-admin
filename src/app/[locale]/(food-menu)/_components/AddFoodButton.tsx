@@ -26,15 +26,15 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
         onClick={() => setOpen(true)}
         className="
           w-full
-          sm:w-[240px]
           h-[240px]
-          rounded-xl
+          rounded-2xl
           border border-dashed border-border
           bg-background
           flex flex-col items-center justify-center
           gap-2
           text-foreground
           hover:bg-muted
+          transition
         "
       >
         <div
@@ -50,7 +50,7 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
           +
         </div>
 
-        <p className="text-sm text-muted-foreground text-center leading-relaxed">
+        <p className="text-sm text-muted-foreground text-center leading-relaxed px-4">
           {t("food.add_to_category", {
             category: category.categoryName,
           })}
