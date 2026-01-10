@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { RevenueData } from "../RevenueStatsCards";
+import { RevenueData } from "../../RevenueDashboard";
 
 type Props = {
   t: (key: string) => string;
