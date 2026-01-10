@@ -4,6 +4,7 @@
 import { FoodCardPropsType } from "@/type/type";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
 import UpdateFoodButton from "./updateFood/UpdateFoodButton";
+import { useEffect, useMemo } from "react";
 
 export const FoodCard: React.FC<FoodCardPropsType> = ({
   food,
@@ -11,6 +12,23 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
   category,
 }) => {
   const { t } = useI18n();
+
+  const imgSrc = useMemo(() => {
+    if (!food.image) return null;
+
+    if (typeof food.image === "string") {
+      const trimmed = food.image.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    }
+
+    return URL.createObjectURL(food.image);
+  }, [food.image]);
+
+  useEffect(() => {
+    if (imgSrc && typeof food.image !== "string") {
+      return () => URL.revokeObjectURL(imgSrc);
+    }
+  }, [imgSrc, food.image]);
 
   return (
     <div
@@ -27,17 +45,15 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
       "
     >
       <div className="relative w-full">
-        <img
-          src={
-            typeof food.image === "string"
-              ? food.image
-              : food.image
-              ? URL.createObjectURL(food.image)
-              : ""
-          }
-          className="w-full h-[140px] rounded-xl object-cover"
-          alt={food.foodName}
-        />
+        {imgSrc ? (
+          <img
+            src={imgSrc}
+            className="w-full h-[140px] rounded-xl object-cover"
+            alt={food.foodName}
+          />
+        ) : (
+          <div className="w-full h-[140px] rounded-xl border border-border bg-muted" />
+        )}
 
         <UpdateFoodButton
           food={food}
