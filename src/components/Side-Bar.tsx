@@ -36,9 +36,11 @@ export const Sidebar = ({ setPage, isMobile, open, onClose }: Props) => {
       w-full
       justify-start
       rounded-md
+      border
+      border-border
       ${
         activePage === page
-          ? "bg-primary text-primary-foreground"
+          ? "bg-primary text-primary-foreground border-primary"
           : "hover:bg-muted"
       }
     `;
