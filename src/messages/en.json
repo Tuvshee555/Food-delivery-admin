@@ -159,7 +159,19 @@
     "DELIVERED": "Delivered",
     "CANCELLED": "Cancelled"
   },
-  "no_revenue_last_7_days": "No revenue in the last 7 days"
+  "no_revenue_last_7_days": "No revenue in the last 7 days",
+  "payment_method.QPAY": "QPay",
+  "payment_method.BANK": "Bank transfer",
+  "payment_method.COD": "Cash",
+  "payment_method.LEMON": "Card (Visa/Mastercard)",
+  "payment_method.UNKNOWN": "Unknown",
+
+  "payment_status": "Payment status",
+  "payment_status.PENDING": "Pending",
+  "payment_status.PAID": "Paid",
+  "payment_status.REFUNDED": "Refunded",
+  "payment_status.CANCELLED": "Cancelled",
+  "payment_status.UNKNOWN": "Unknown"
 
 
 

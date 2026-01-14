@@ -60,7 +60,23 @@ export function OrderMetaInfo({ order, t, copy }: Props) {
           {order?.createdAt ? new Date(order.createdAt).toLocaleString() : "-"}
         </Item>
 
-        <Item label={t("payment_method")}>{order?.paymentMethod ?? "-"}</Item>
+        <Item label={t("payment_method")}>
+          {order?.paymentMethod === "LEMON"
+            ? "Card (Visa/Mastercard)"
+            : order?.paymentMethod ?? "-"}
+        </Item>
+
+        <Item label={t("payment_status")}>
+          {order?.status === "PAID" ? (
+            <span className="px-2 py-1 rounded-md text-xs font-semibold bg-green-500/15 text-green-600">
+              PAID
+            </span>
+          ) : (
+            <span className="px-2 py-1 rounded-md text-xs font-semibold bg-orange-500/15 text-orange-600">
+              {order?.status ?? "-"}
+            </span>
+          )}
+        </Item>
       </div>
     </div>
   );

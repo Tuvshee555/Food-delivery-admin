@@ -161,7 +161,19 @@
     "DELIVERED": "Хүргэгдсэн",
     "CANCELLED": "Цуцлагдсан"
   },
-  "no_revenue_last_7_days": "Сүүлийн 7 хоногт орлого байхгүй"
+  "no_revenue_last_7_days": "Сүүлийн 7 хоногт орлого байхгүй",
+  "payment_method.QPAY": "QPay",
+  "payment_method.BANK": "Дансны шилжүүлэг",
+  "payment_method.COD": "Бэлнээр",
+  "payment_method.LEMON": "Картаар (Visa/Mastercard)",
+  "payment_method.UNKNOWN": "Тодорхойгүй",
+
+  "payment_status": "Төлбөрийн төлөв",
+  "payment_status.PENDING": "Хүлээгдэж буй",
+  "payment_status.PAID": "Төлсөн",
+  "payment_status.REFUNDED": "Буцаалт хийгдсэн",
+  "payment_status.CANCELLED": "Цуцлагдсан",
+  "payment_status.UNKNOWN": "Тодорхойгүй"
 
 
 
