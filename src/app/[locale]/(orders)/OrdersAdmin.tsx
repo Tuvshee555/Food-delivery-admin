@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
 import { PaginationControls } from "./components/PaginationControls";
 import { OrderHeader } from "./components/OrderHeader";
@@ -10,6 +10,7 @@ import { normalizeOrderId } from "@/utils/normalizeOrderId";
 
 export default function OrdersAdmin() {
   const { t } = useI18n();
+  const [search, setSearch] = useState("");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -22,35 +23,12 @@ export default function OrdersAdmin() {
     loading,
     fetchError,
     totalPages,
+    totalOrders,
     setPage,
     toggle,
     copy,
     changeStatus,
-  } = useOrdersAdmin(token, t);
-
-  const [search, setSearch] = useState("");
-
-  const searchedOrders = useMemo(() => {
-    const q = normalizeOrderId(search);
-    if (!q) return orders;
-
-    return orders.filter((o) => {
-      const orderNumber = normalizeOrderId(o.orderNumber ?? "");
-      const id = normalizeOrderId(o.id ?? "");
-      return orderNumber.includes(q) || id.includes(q);
-    });
-  }, [orders, search]);
-
-  // paginate AFTER search
-  const paged = useMemo(() => {
-    const start = (page - 1) * limit;
-    return searchedOrders.slice(start, start + limit);
-  }, [searchedOrders, page, limit]);
-
-  const searchTotalPages = Math.max(
-    1,
-    Math.ceil(searchedOrders.length / limit)
-  );
+  } = useOrdersAdmin(token, t, normalizeOrderId(search));
 
   return (
     <div className="w-full max-w-full overflow-x-hidden bg-background text-foreground px-4 py-4 md:p-6">
@@ -59,10 +37,7 @@ export default function OrdersAdmin() {
         <h1 className="text-xl font-semibold">{t("orders")}</h1>
 
         <div className="text-sm text-muted-foreground">
-          {t("page_of", {
-            page,
-            total: search ? searchTotalPages : totalPages,
-          })}
+          {t("page_of", { page, total: totalPages })}
         </div>
       </div>
 
@@ -90,9 +65,7 @@ export default function OrdersAdmin() {
           </button>
 
           <div className="text-sm text-muted-foreground">
-            {search
-              ? `${searchedOrders.length} found`
-              : `${orders.length} total`}
+            {search ? `${totalOrders} found` : `${totalOrders} total`}
           </div>
         </div>
       </div>
@@ -110,7 +83,7 @@ export default function OrdersAdmin() {
       )}
 
       {/* Empty */}
-      {!loading && !fetchError && paged.length === 0 && (
+      {!loading && !fetchError && orders.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           {search ? "No matching order found" : t("orders_empty")}
         </div>
@@ -118,7 +91,7 @@ export default function OrdersAdmin() {
 
       {/* Orders */}
       {!loading &&
-        paged.map((order, idx) => {
+        orders.map((order, idx) => {
           const items = order.foodOrderItems ?? order.items ?? [];
           return (
             <section
@@ -151,9 +124,9 @@ export default function OrdersAdmin() {
       {/* Pagination */}
       <PaginationControls
         loading={loading}
-        hasData={searchedOrders.length > 0}
+        hasData={totalOrders > 0}
         page={page}
-        totalPages={search ? searchTotalPages : totalPages}
+        totalPages={totalPages}
         setPage={setPage}
         t={t}
       />

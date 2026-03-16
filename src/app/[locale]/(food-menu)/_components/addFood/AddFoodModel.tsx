@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { uploadMedia } from "@/utils/uploadMedia";
@@ -37,6 +37,8 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   const [sizes, setSizes] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const validateInputs = () => {
     if (!foodData.foodName.trim())
@@ -55,9 +57,51 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     return { ok: true };
   };
 
+  // prevent background scroll while modal is open
+  useEffect(() => {
+    const original = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = original;
+    };
+  }, []);
+
+  // generate previews when files change
+  useEffect(() => {
+    // images
+    if (images.length) {
+      const urls = images.map((f) => URL.createObjectURL(f));
+      setImagePreviews(urls);
+      // revoke on cleanup
+      return () => {
+        urls.forEach((u) => URL.revokeObjectURL(u));
+      };
+    } else {
+      setImagePreviews([]);
+    }
+  }, [images]);
+
+  useEffect(() => {
+    if (video) {
+      const url = URL.createObjectURL(video);
+      setVideoPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setVideoPreview(null);
+    }
+  }, [video]);
+
+  // focus the modal container for accessibility
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) el.focus();
+  }, []);
+
   const addFood = async () => {
+    setErrorMsg(null);
     const valid = validateInputs();
     if (!valid.ok) {
+      setErrorMsg(valid.msg ?? null);
       toast.error(valid.msg);
       return;
     }
@@ -65,7 +109,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
     try {
       setLoading(true);
 
-      // 🔥 upload media via backend
+      // upload media via backend (will throw on failure)
       const uploadedImages = await uploadMedia(images);
       const uploadedVideo = video ? (await uploadMedia([video]))[0] : null;
 
@@ -89,16 +133,43 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
       refreshFood();
       closeModal();
     } catch (err: any) {
-      // console.error(err);
-      toast.error(err?.message ?? t("food.toast.error"));
+      const msg = err?.message ?? t("food.toast.error");
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="bg-card text-foreground p-6 rounded-2xl w-full max-w-[640px] shadow-lg max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("food.add_modal.title") || "Add food"}
+    >
+      <div
+        ref={containerRef}
+        tabIndex={-1}
+        className="bg-card text-foreground p-4 sm:p-6 rounded-2xl w-full max-w-[720px] shadow-lg max-h-[90vh] overflow-y-auto"
+      >
+        <header className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            {t("food.add_modal.title") || "Add new food"}
+          </h2>
+          <button
+            aria-label={t("common.close") || "Close"}
+            onClick={closeModal}
+            className="ml-4 rounded-md px-3 py-1 hover:bg-muted/60"
+          >
+            ✕
+          </button>
+        </header>
+
+        {errorMsg ? (
+          <div className="mb-3 text-sm text-destructive">{errorMsg}</div>
+        ) : null}
+
         <AddFoodForm
           category={category}
           foodData={foodData}

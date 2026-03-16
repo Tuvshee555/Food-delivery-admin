@@ -9,7 +9,8 @@ import { OrderStatus, RawOrder, STATUS_FLOW } from "../type";
 
 export function useOrdersAdmin(
   token: string | null,
-  t: (key: string) => string
+  t: (key: string) => string,
+  search: string
 ) {
   const [orders, setOrders] = useState<RawOrder[]>([]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -17,6 +18,8 @@ export function useOrdersAdmin(
   const limit = 10;
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -30,21 +33,41 @@ export function useOrdersAdmin(
 
     axios
       .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order`, {
+        params: {
+          page,
+          limit,
+          search: search || undefined,
+        },
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(({ data }) => {
-        if (Array.isArray(data)) setOrders(data);
-        else if (Array.isArray(data?.orders)) setOrders(data.orders);
-        else if (Array.isArray(data?.ordersList)) setOrders(data.ordersList);
-        else setOrders([]);
+        if (Array.isArray(data?.orders)) {
+          setOrders(data.orders);
+          setTotalPages(data?.pagination?.totalPages ?? 1);
+          setTotalOrders(data?.pagination?.total ?? data.orders.length);
+        } else if (Array.isArray(data)) {
+          setOrders(data);
+          setTotalPages(Math.max(1, Math.ceil(data.length / limit)));
+          setTotalOrders(data.length);
+        } else if (Array.isArray(data?.ordersList)) {
+          setOrders(data.ordersList);
+          setTotalPages(Math.max(1, Math.ceil(data.ordersList.length / limit)));
+          setTotalOrders(data.ordersList.length);
+        } else {
+          setOrders([]);
+          setTotalPages(1);
+          setTotalOrders(0);
+        }
       })
       .catch((err) => {
         // console.error("fetch orders error", err?.response ?? err);
         setFetchError(t("fetch_failed"));
         setOrders([]);
+        setTotalPages(1);
+        setTotalOrders(0);
       })
       .finally(() => setLoading(false));
-  }, [token, t]);
+  }, [token, t, page, limit, search]);
 
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -102,13 +125,10 @@ export function useOrdersAdmin(
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(orders.length / limit));
-  const paged = orders.slice((page - 1) * limit, page * limit);
-
   return {
     orders,
+    totalOrders,
     setOrders,
-    paged,
     expanded,
     page,
     limit,
