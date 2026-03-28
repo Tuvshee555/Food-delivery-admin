@@ -3,6 +3,7 @@
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { FoodFormState } from "@/type/type";
+import { Input } from "@/components/ui/input";
 
 type Props = {
   updatedFood: FoodFormState;
@@ -29,39 +30,41 @@ export default function FoodSizeFields({ updatedFood, setUpdatedFood }: Props) {
   };
 
   return (
-    <div className="grid gap-2">
-      <label className="text-sm font-medium">Sizes</label>
-
+    <div className="space-y-2">
+      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Хэмжээ
+      </label>
       <div className="flex gap-2">
-        <input
+        <Input
           value={newSize}
           onChange={(e) => setNewSize(e.target.value)}
-          className="border p-2 rounded w-full"
-          placeholder="S, M, 42, etc."
+          onKeyDown={(e) => e.key === "Enter" && addSize()}
+          placeholder="S, M, 42..."
+          className="h-9 flex-1"
         />
         <button
           type="button"
           onClick={addSize}
-          className="bg-red-500 text-white px-3 rounded"
+          className="h-9 w-9 shrink-0 rounded-md bg-primary text-primary-foreground flex items-center justify-center"
         >
           <Plus size={16} />
         </button>
       </div>
-
-      <div className="flex flex-wrap gap-2">
-        {(updatedFood.sizes || []).map((size, i) => (
-          <div
-            key={i}
-            className="px-3 py-1 bg-gray-100 rounded-full flex items-center gap-1 text-sm"
-          >
-            {size}
-            <X
-              onClick={() => removeSize(i)}
-              className="w-4 h-4 cursor-pointer"
-            />
-          </div>
-        ))}
-      </div>
+      {(updatedFood.sizes || []).length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {(updatedFood.sizes || []).map((size, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1 bg-muted text-foreground text-xs px-2.5 py-1 rounded-full border border-border"
+            >
+              {size}
+              <button type="button" onClick={() => removeSize(i)}>
+                <X className="w-3 h-3 text-muted-foreground hover:text-destructive" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

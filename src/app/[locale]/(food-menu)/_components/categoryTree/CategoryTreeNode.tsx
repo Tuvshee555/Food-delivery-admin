@@ -99,13 +99,13 @@ export const CategoryTreeNode: React.FC<Props> = ({
     <div className="mb-1">
       <div
         className={`
-          flex items-center justify-between
-          rounded-md px-2 py-1 text-sm
-          cursor-pointer
+          group flex items-center justify-between
+          rounded-md px-2 py-1.5 text-sm
+          cursor-pointer transition-colors
           ${
             isSelected
-              ? "bg-muted text-foreground"
-              : "text-foreground hover:bg-muted"
+              ? "bg-primary/10 text-primary font-medium"
+              : "text-foreground hover:bg-muted/60"
           }
         `}
         style={{ paddingLeft: 8 + depth * 12 }}
@@ -134,11 +134,11 @@ export const CategoryTreeNode: React.FC<Props> = ({
             <span className="w-6" />
           )}
 
-          <span className="truncate">{node.categoryName}</span>
+          <span className="truncate text-sm font-medium">{node.categoryName}</span>
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <AddCategoryButton
             parentId={node.id}
             variant="icon"

@@ -28,11 +28,11 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
         gap-4
       "
     >
-      <h2 className="text-base font-semibold">
-        {t("category_with_count", {
-          name: category.categoryName,
-          count: foodsInCategory.length,
-        })}
+      <h2 className="font-semibold">
+        {category.categoryName}
+        <span className="text-muted-foreground font-normal text-sm ml-1.5">
+          ({foodsInCategory.length} {t("items_short")})
+        </span>
       </h2>
 
       <div

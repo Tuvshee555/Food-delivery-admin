@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { AddFoodModel } from "./addFood/AddFoodModel";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
@@ -24,37 +25,10 @@ export const AddFoodButton: React.FC<AddFoodButtonProps> = ({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="
-          w-full
-          h-[240px]
-          rounded-2xl
-          border border-dashed border-border
-          bg-background
-          flex flex-col items-center justify-center
-          gap-2
-          text-foreground
-          hover:bg-muted
-          transition
-        "
+        className="border-2 border-dashed border-border rounded-xl min-h-[240px] flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-muted/30 transition-all text-muted-foreground hover:text-primary w-full"
       >
-        <div
-          className="
-            h-[44px] w-[44px]
-            rounded-full
-            bg-primary
-            text-primary-foreground
-            flex items-center justify-center
-            text-lg
-          "
-        >
-          +
-        </div>
-
-        <p className="text-sm text-muted-foreground text-center leading-relaxed px-4">
-          {t("food.add_to_category", {
-            category: category.categoryName,
-          })}
-        </p>
+        <Plus className="w-8 h-8" />
+        <span className="text-sm font-medium">Хоол нэмэх</span>
       </button>
 
       {open && (

@@ -35,6 +35,9 @@
       "error": "Failed to add item."
     },
     "add_title": "Add new item to {category}",
+    "add_modal": {
+      "title": "Add new food"
+    },
     "fields": {
       "name": "Product name",
       "price": "Final price",

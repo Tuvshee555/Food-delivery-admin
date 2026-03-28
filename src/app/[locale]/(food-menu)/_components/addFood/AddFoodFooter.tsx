@@ -13,12 +13,12 @@ export const AddFoodFooter = ({ loading, onCancel, onSubmit }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="flex justify-end gap-2 mt-6">
+    <div className="flex gap-3 mt-6">
       <Button
         type="button"
         variant="outline"
         onClick={onCancel}
-        className="h-[44px]"
+        className="flex-1 h-[44px]"
       >
         {t("common.cancel")}
       </Button>
@@ -27,7 +27,7 @@ export const AddFoodFooter = ({ loading, onCancel, onSubmit }: Props) => {
         type="button"
         onClick={onSubmit}
         disabled={loading}
-        className="h-[44px]"
+        className="flex-1 h-[44px]"
       >
         {loading ? t("common.adding") : t("common.add")}
       </Button>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
 import { useAuth } from "@/provider/AuthProvider";
 
@@ -65,18 +65,23 @@ export const AddCategoryButton: React.FC<Props> = ({
     }
   };
 
-  const triggerClass =
-    variant === "primary"
-      ? "inline-flex items-center gap-1 h-[44px] px-4 rounded-full bg-primary text-primary-foreground text-sm"
-      : "inline-flex items-center justify-center h-[44px] w-[44px] rounded-full border border-border hover:bg-muted";
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className={triggerClass} title={tooltip}>
-          <Plus className="w-4 h-4" />
-          {variant === "primary" && <span>{label ?? t("category.add")}</span>}
-        </button>
+        {variant === "primary" ? (
+          <Button variant="outline" size="sm" className="gap-1.5 h-8" title={tooltip}>
+            <Plus className="w-4 h-4" />
+            <span>{label ?? t("category.add")}</span>
+          </Button>
+        ) : (
+          <button
+            type="button"
+            className="inline-flex items-center justify-center h-[28px] w-[28px] rounded-md border border-border hover:bg-muted"
+            title={tooltip}
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[400px] bg-card text-foreground">

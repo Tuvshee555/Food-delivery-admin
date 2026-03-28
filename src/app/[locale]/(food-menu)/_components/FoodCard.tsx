@@ -33,45 +33,46 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
   return (
     <div
       className="
+        group
         bg-card
         text-foreground
-        border border-border
+        ring-1 ring-border
         rounded-2xl
-        p-4
-        flex flex-col
-        gap-4
-        w-full
-        min-h-[240px]
         overflow-hidden
+        flex flex-col
+        w-full
       "
     >
-      <div className="relative w-full">
+      <div className="relative w-full aspect-square">
         {imgSrc ? (
           <img
             src={imgSrc}
-            className="w-full h-[140px] rounded-xl object-cover"
+            className="w-full h-full object-cover"
             alt={food.foodName}
           />
         ) : (
-          <div className="w-full h-[140px] rounded-xl border border-border bg-muted" />
+          <div className="w-full h-full bg-muted" />
         )}
 
-        <UpdateFoodButton
-          food={food}
-          refreshFood={refreshFood}
-          category={category}
-        />
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+          <UpdateFoodButton
+            food={food}
+            refreshFood={refreshFood}
+            category={category}
+          />
+        </div>
       </div>
 
-      <div className="w-full space-y-1.5 flex-1 overflow-hidden">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-medium line-clamp-2">{food.foodName}</h3>
-          <span className="text-sm font-medium shrink-0">{food.price}</span>
+      <div className="p-3 space-y-0.5">
+        <h3 className="text-sm font-semibold line-clamp-1">{food.foodName}</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-primary">{food.price}₮</span>
+          {food.oldPrice && food.oldPrice !== food.price && (
+            <span className="text-xs text-muted-foreground line-through">
+              {food.oldPrice}₮
+            </span>
+          )}
         </div>
-
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {food.ingredients || t("no_description")}
-        </p>
       </div>
     </div>
   );

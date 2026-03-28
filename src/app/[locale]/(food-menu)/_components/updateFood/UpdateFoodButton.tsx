@@ -139,14 +139,14 @@ export default function UpdateFoodButton({ food, refreshFood }: FoodCardPropsTyp
       <DialogTrigger asChild>
         <button
           type="button"
-          className="absolute bottom-2 right-2 h-11 w-11 bg-white rounded-full flex items-center justify-center"
+          className="bg-background/90 backdrop-blur-sm border border-border rounded-md p-1.5 hover:bg-primary hover:text-primary-foreground transition-colors"
           aria-label={t("edit_food")}
         >
-          <Pencil className="w-5 h-5 text-red-500" />
+          <Pencil className="w-3.5 h-3.5" />
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("edit_food")}</DialogTitle>
           <DialogDescription>{t("update_item_details")}</DialogDescription>
