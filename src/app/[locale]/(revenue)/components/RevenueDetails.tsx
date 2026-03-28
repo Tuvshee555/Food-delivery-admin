@@ -61,7 +61,7 @@ export function RevenueDetails({ t, chartData, payments, loading }: Props) {
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-              {t("no_paid_revenue")}
+              {t("no_payments")}
             </div>
           )}
         </CardContent>
@@ -105,7 +105,7 @@ export function RevenueDetails({ t, chartData, payments, loading }: Props) {
             ))
           ) : (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              {t("no_paid_revenue")}
+              {t("no_payments")}
             </div>
           )}
         </CardContent>

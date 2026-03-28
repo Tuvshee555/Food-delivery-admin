@@ -8,6 +8,7 @@ import { uploadMedia } from "@/utils/uploadMedia";
 import { AddFoodForm } from "./AddFoodForm";
 import { AddFoodFooter } from "./AddFoodFooter";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { useAuth } from "@/provider/AuthProvider";
 
 interface FoodModelProps {
   category: { id: string; categoryName: string };
@@ -21,6 +22,7 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
   refreshFood,
 }) => {
   const { t } = useI18n();
+  const { token } = useAuth();
 
   const [foodData, setFoodData] = useState({
     foodName: "",
@@ -127,7 +129,11 @@ export const AddFoodModel: React.FC<FoodModelProps> = ({
 
       if (oldPrice) payload.oldPrice = Number(oldPrice);
 
-      await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`, payload);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       toast.success(t("food.toast.success"));
       refreshFood();

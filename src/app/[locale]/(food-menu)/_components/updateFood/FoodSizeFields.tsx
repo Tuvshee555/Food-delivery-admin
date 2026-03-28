@@ -1,27 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
+import { FoodFormState } from "@/type/type";
 
-export default function FoodSizeFields({ updatedFood, setUpdatedFood }: any) {
+type Props = {
+  updatedFood: FoodFormState;
+  setUpdatedFood: React.Dispatch<React.SetStateAction<FoodFormState>>;
+};
+
+export default function FoodSizeFields({ updatedFood, setUpdatedFood }: Props) {
   const [newSize, setNewSize] = useState("");
 
   const addSize = () => {
     if (!newSize.trim()) return;
-
-    setUpdatedFood((p: any) => ({
+    setUpdatedFood((p) => ({
       ...p,
       sizes: [...(p.sizes || []), newSize.trim()],
     }));
-
     setNewSize("");
   };
 
   const removeSize = (index: number) => {
-    setUpdatedFood((p: any) => ({
+    setUpdatedFood((p) => ({
       ...p,
-      sizes: p.sizes.filter((_: any, i: number) => i !== index),
+      sizes: p.sizes.filter((_, i) => i !== index),
     }));
   };
 
@@ -37,6 +40,7 @@ export default function FoodSizeFields({ updatedFood, setUpdatedFood }: any) {
           placeholder="S, M, 42, etc."
         />
         <button
+          type="button"
           onClick={addSize}
           className="bg-red-500 text-white px-3 rounded"
         >
@@ -45,7 +49,7 @@ export default function FoodSizeFields({ updatedFood, setUpdatedFood }: any) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(updatedFood.sizes || []).map((size: string, i: number) => (
+        {(updatedFood.sizes || []).map((size, i) => (
           <div
             key={i}
             className="px-3 py-1 bg-gray-100 rounded-full flex items-center gap-1 text-sm"

@@ -2,11 +2,11 @@
 
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OrderItems } from "./component/OrderItems";
+import { OrderItems } from "./components/OrderItems";
 import { RawOrder } from "./type";
 import { normalizeDelivery } from "@/utils/normalizeDelivery";
-import { DeliveryInfo } from "./component/DeliveryInfo";
-import { OrderMetaInfo } from "./component/OrderMetaInfo";
+import { DeliveryInfo } from "./components/DeliveryInfo";
+import { OrderMetaInfo } from "./components/OrderMetaInfo";
 
 type Props = {
   order: RawOrder;

@@ -3,9 +3,11 @@
 import axios from "axios";
 import { ChevronRight, ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { CategoryNode } from "./types";
 import { AddCategoryButton } from "../AddCategoryButton";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { useAuth } from "@/provider/AuthProvider";
 import { RenameDialog } from "./components/RenameDialog";
 import { DeleteDialog } from "./components/DeleteDialog";
 
@@ -29,6 +31,7 @@ export const CategoryTreeNode: React.FC<Props> = ({
   onChanged,
 }) => {
   const { t } = useI18n();
+  const { token } = useAuth();
 
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -44,24 +47,52 @@ export const CategoryTreeNode: React.FC<Props> = ({
       return;
     }
 
-    await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
-      id: node.id,
-      categoryName: newName.trim(),
-    });
+    if (!token) {
+      toast.error(t("unauthorized"));
+      return;
+    }
 
-    setRenameOpen(false);
-    onChanged();
+    try {
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`,
+        { id: node.id, categoryName: newName.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setRenameOpen(false);
+      onChanged();
+      toast.success(t("updated"));
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || t("update_failed")
+        : t("update_failed");
+      toast.error(message);
+    }
   };
 
   /* ------------------ DELETE ------------------ */
   const handleDeleteConfirm = async () => {
     setDeleteOpen(false);
 
-    await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
-      data: { id: node.id },
-    });
+    if (!token) {
+      toast.error(t("unauthorized"));
+      return;
+    }
 
-    onChanged();
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
+        data: { id: node.id },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      onChanged();
+      toast.success(t("deleted"));
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || t("update_failed")
+        : t("update_failed");
+      toast.error(message);
+    }
   };
 
   return (

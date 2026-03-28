@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AdminTopBar } from "./AdminTopBar";
-import { Sidebar } from "../Side-Bar";
+import { Sidebar } from "../Sidebar";
 
 export default function AdminLayout({
   children,
@@ -17,7 +17,7 @@ export default function AdminLayout({
     <div className="min-h-screen w-full overflow-x-hidden">
       {/* Desktop layout */}
       <div className="hidden md:flex min-h-screen">
-        <aside className="w-[220px] border-r shrink-0">
+        <aside className="w-[240px] shrink-0">
           <Sidebar setPage={setPage} />
         </aside>
 

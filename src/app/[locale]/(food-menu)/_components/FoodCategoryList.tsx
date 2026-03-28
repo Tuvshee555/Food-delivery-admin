@@ -1,5 +1,6 @@
 "use client";
 
+import { PackageX } from "lucide-react";
 import { FoodCard } from "./FoodCard";
 import { AddFoodButton } from "./AddFoodButton";
 import { FoodCategoryListPropsType } from "@/type/type";
@@ -56,6 +57,13 @@ export const FoodCategoryList: React.FC<FoodCategoryListPropsType> = ({
           />
         ))}
       </div>
+
+      {foodsInCategory.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-10 gap-3 text-muted-foreground">
+          <PackageX className="w-8 h-8 opacity-40" />
+          <p className="text-sm">{t("no_category_foods")}</p>
+        </div>
+      )}
     </section>
   );
 };

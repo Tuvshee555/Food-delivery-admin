@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 "use client";
 
 import axios from "axios";
@@ -59,8 +57,7 @@ export function useOrdersAdmin(
           setTotalOrders(0);
         }
       })
-      .catch((err) => {
-        // console.error("fetch orders error", err?.response ?? err);
+      .catch(() => {
         setFetchError(t("fetch_failed"));
         setOrders([]);
         setTotalPages(1);
@@ -72,7 +69,11 @@ export function useOrdersAdmin(
   const toggle = (id: string) =>
     setExpanded((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
 
@@ -114,13 +115,12 @@ export function useOrdersAdmin(
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success(t("status_updated"));
-    } catch (err) {
+    } catch {
       setOrders((prev) => {
         const rollback = [...prev];
         rollback[idx] = before;
         return rollback;
       });
-      // console.error("status update error", err ?? err);
       toast.error(t("status_update_failed"));
     }
   };
@@ -128,7 +128,6 @@ export function useOrdersAdmin(
   return {
     orders,
     totalOrders,
-    setOrders,
     expanded,
     page,
     limit,

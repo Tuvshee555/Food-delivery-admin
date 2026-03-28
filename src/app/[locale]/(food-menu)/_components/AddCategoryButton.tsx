@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { useAuth } from "@/provider/AuthProvider";
 
 type Props = {
   parentId?: string | null;
@@ -30,22 +32,34 @@ export const AddCategoryButton: React.FC<Props> = ({
   tooltip,
 }) => {
   const { t } = useI18n();
+  const { token } = useAuth();
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!categoryName.trim()) return;
+    if (!token) {
+      toast.error(t("unauthorized"));
+      return;
+    }
 
     try {
       setLoading(true);
-      await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category`, {
-        categoryName: categoryName.trim(),
-        parentId,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category`,
+        { categoryName: categoryName.trim(), parentId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setCategoryName("");
       setOpen(false);
       onCreated();
+      toast.success(t("category.add"));
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.message || t("unauthorized")
+        : t("unauthorized");
+      toast.error(message);
     } finally {
       setLoading(false);
     }

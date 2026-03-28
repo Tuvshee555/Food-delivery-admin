@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -15,8 +12,11 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { uploadMedia } from "@/utils/uploadMedia";
-import { FoodCardPropsType, FoodType } from "@/type/type";
+import { FoodCardPropsType, FoodFormState } from "@/type/type";
+import { useAuth } from "@/provider/AuthProvider";
+import { useI18n } from "@/components/i18n/ClientI18nProvider";
 
 import FoodBasicFields from "./FoodBasicFields";
 import FoodFooterActions from "./FoodFooterActions";
@@ -24,12 +24,22 @@ import { SelectCategory } from "../SelectCategory";
 import FoodMediaFields from "./FoodMediaFields";
 import FoodSizeFields from "./FoodSizeFields";
 
-export default function UpdateFoodButton({
-  food,
-  refreshFood,
-}: FoodCardPropsType) {
-  const [updatedFood, setUpdatedFood] = useState<any>({});
+export default function UpdateFoodButton({ food, refreshFood }: FoodCardPropsType) {
+  const { token } = useAuth();
+  const { t } = useI18n();
+
+  const [updatedFood, setUpdatedFood] = useState<FoodFormState>(() => ({
+    ...food,
+    price: String(food.price ?? ""),
+    oldPrice: food.oldPrice ? String(food.oldPrice) : "",
+    discount: food.discount ? String(food.discount) : "",
+    sizes: Array.isArray(food.sizes)
+      ? food.sizes.map((s) => (typeof s === "object" && s !== null ? s.label : s))
+      : [],
+  }));
+
   const [loading, setLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [mainPreview, setMainPreview] = useState("");
   const [extraPreviews, setExtraPreviews] = useState<string[]>([]);
@@ -47,23 +57,19 @@ export default function UpdateFoodButton({
       oldPrice: food.oldPrice ? String(food.oldPrice) : "",
       discount: food.discount ? String(food.discount) : "",
       sizes: Array.isArray(food.sizes)
-        ? food.sizes.map((s: any) => s.label ?? s)
+        ? food.sizes.map((s) => (typeof s === "object" && s !== null ? s.label : s))
         : [],
     });
 
     setMainPreview(typeof food.image === "string" ? food.image : "");
-
     setExtraPreviews(
       Array.isArray(food.extraImages)
-        ? food.extraImages.filter(
-            (img): img is string => typeof img === "string"
-          )
+        ? food.extraImages.filter((img): img is string => typeof img === "string")
         : []
     );
-
     setVideoPreview(typeof food.video === "string" ? food.video : "");
-
     existingExtraCount.current = food.extraImages?.length ?? 0;
+    setConfirmDelete(false);
   }, [food]);
 
   useEffect(() => {
@@ -74,23 +80,18 @@ export default function UpdateFoodButton({
     try {
       setLoading(true);
 
-      // 🔥 upload new main image if replaced
       const image =
         updatedFood.image instanceof File
           ? (await uploadMedia([updatedFood.image]))[0]
           : updatedFood.image;
 
-      // 🔥 upload newly added extra images
       const newExtras = extraFiles.length ? await uploadMedia(extraFiles) : [];
 
       const finalExtras = [
-        ...(updatedFood.extraImages || []).filter(
-          (i: any) => typeof i === "string"
-        ),
+        ...(updatedFood.extraImages || []).filter((i) => typeof i === "string"),
         ...newExtras,
       ];
 
-      // 🔥 upload new video if replaced
       const video = videoFile
         ? (await uploadMedia([videoFile]))[0]
         : updatedFood.video;
@@ -103,20 +104,16 @@ export default function UpdateFoodButton({
           extraImages: finalExtras,
           video,
           price: Number(updatedFood.price),
-          oldPrice: updatedFood.oldPrice
-            ? Number(updatedFood.oldPrice)
-            : undefined,
-          discount: updatedFood.discount
-            ? Number(updatedFood.discount)
-            : undefined,
-        }
+          oldPrice: updatedFood.oldPrice ? Number(updatedFood.oldPrice) : undefined,
+          discount: updatedFood.discount ? Number(updatedFood.discount) : undefined,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Updated");
+      toast.success(t("updated"));
       refreshFood();
-    } catch (err) {
-      // console.error(err);
-      toast.error("Update failed");
+    } catch {
+      toast.error(t("update_failed"));
     } finally {
       setLoading(false);
     }
@@ -126,67 +123,105 @@ export default function UpdateFoodButton({
     try {
       setLoading(true);
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${food.id}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food/${food.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Deleted");
+      toast.success(t("deleted"));
       refreshFood();
     } finally {
       setLoading(false);
+      setConfirmDelete(false);
     }
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="absolute bottom-2 right-2 h-11 w-11 bg-white rounded-full flex items-center justify-center">
+        <button
+          type="button"
+          className="absolute bottom-2 right-2 h-11 w-11 bg-white rounded-full flex items-center justify-center"
+          aria-label={t("edit_food")}
+        >
           <Pencil className="w-5 h-5 text-red-500" />
-        </div>
+        </button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Food</DialogTitle>
-          <DialogDescription>Update item details</DialogDescription>
+          <DialogTitle>{t("edit_food")}</DialogTitle>
+          <DialogDescription>{t("update_item_details")}</DialogDescription>
         </DialogHeader>
 
-        <FoodBasicFields
-          updatedFood={updatedFood}
-          setUpdatedFood={setUpdatedFood}
-        />
+        {confirmDelete ? (
+          /* Delete confirmation inline panel */
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 space-y-3">
+            <p className="text-sm font-medium text-destructive">
+              {t("delete_food_title")}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t("delete_food_description")}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDelete(false)}
+                disabled={loading}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={deleteFood}
+                disabled={loading}
+              >
+                {loading ? t("common.adding") : t("confirm_delete")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <FoodBasicFields
+              updatedFood={updatedFood}
+              setUpdatedFood={setUpdatedFood}
+            />
 
-        <SelectCategory
-          updatedFood={updatedFood as FoodType}
-          handleChange={(e) =>
-            setUpdatedFood((p: any) => ({ ...p, categoryId: e.value }))
-          }
-        />
+            <SelectCategory
+              updatedFood={updatedFood}
+              handleChange={(e) =>
+                setUpdatedFood((p) => ({ ...p, categoryId: e.value }))
+              }
+            />
 
-        <FoodMediaFields
-          updatedFood={updatedFood}
-          setUpdatedFood={setUpdatedFood}
-          mainPreview={mainPreview}
-          setMainPreview={setMainPreview}
-          extraPreviews={extraPreviews}
-          setExtraPreviews={setExtraPreviews}
-          extraFiles={extraFiles}
-          setExtraFiles={setExtraFiles}
-          videoPreview={videoPreview}
-          setVideoPreview={setVideoPreview}
-          setVideoFile={setVideoFile}
-          createdUrls={createdUrls}
-          existingExtraCount={existingExtraCount}
-        />
+            <FoodMediaFields
+              updatedFood={updatedFood}
+              setUpdatedFood={setUpdatedFood}
+              mainPreview={mainPreview}
+              setMainPreview={setMainPreview}
+              extraPreviews={extraPreviews}
+              setExtraPreviews={setExtraPreviews}
+              extraFiles={extraFiles}
+              setExtraFiles={setExtraFiles}
+              videoPreview={videoPreview}
+              setVideoPreview={setVideoPreview}
+              setVideoFile={setVideoFile}
+              createdUrls={createdUrls}
+              existingExtraCount={existingExtraCount}
+            />
 
-        <FoodSizeFields
-          updatedFood={updatedFood}
-          setUpdatedFood={setUpdatedFood}
-        />
+            <FoodSizeFields
+              updatedFood={updatedFood}
+              setUpdatedFood={setUpdatedFood}
+            />
 
-        <FoodFooterActions
-          loading={loading}
-          onSave={updateData}
-          onDelete={deleteFood}
-        />
+            <FoodFooterActions
+              loading={loading}
+              onSave={updateData}
+              onDelete={() => setConfirmDelete(true)}
+            />
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

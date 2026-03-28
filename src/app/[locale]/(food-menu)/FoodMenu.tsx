@@ -1,51 +1,36 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-import { CategoryTree } from "./_components/categoryThree/CategoryTree";
+import { CategoryTree } from "./_components/categoryTree/CategoryTree";
 import { FoodCategoryList } from "./_components/FoodCategoryList";
 import { FoodType } from "@/type/type";
 import { useI18n } from "@/components/i18n/ClientI18nProvider";
+import { useAuth } from "@/provider/AuthProvider";
 import CategorySelectorButton from "./_components/components/CategorySelectorButton";
 import CategoryMobileSheet from "./_components/components/CategoryMobileSheet";
-
-type CategoryNode = {
-  id: string;
-  categoryName: string;
-  parentId: string | null;
-  children?: CategoryNode[];
-};
+import { flattenTree, CategoryNode } from "@/utils/categoryUtils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const FoodMenu = () => {
   const { t } = useI18n();
+  const { token } = useAuth();
 
   const [loadingCats, setLoadingCats] = useState(false);
+  const [loadingFoods, setLoadingFoods] = useState(false);
   const [tree, setTree] = useState<CategoryNode[]>([]);
   const [flatCats, setFlatCats] = useState<CategoryNode[]>([]);
   const [foods, setFoods] = useState<FoodType[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const flattenTree = (nodes: CategoryNode[]): CategoryNode[] => {
-    const result: CategoryNode[] = [];
-    const walk = (n: CategoryNode) => {
-      result.push(n);
-      n.children?.forEach(walk);
-    };
-    nodes.forEach(walk);
-    return result;
-  };
-
-  const reloadCategories = async () => {
+  const reloadCategories = useCallback(async () => {
     try {
       setLoadingCats(true);
       const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/tree`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/tree`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data: CategoryNode[] = res.data || [];
       setTree(data);
@@ -53,22 +38,29 @@ export const FoodMenu = () => {
       const flat = flattenTree(data);
       setFlatCats(flat);
 
-      if (!selectedCategoryId && flat.length > 0) {
-        setSelectedCategoryId(flat[0].id);
-      }
+      // Only auto-select the first category on initial load
+      setSelectedCategoryId((prev) => (prev ? prev : flat[0]?.id ?? null));
     } finally {
       setLoadingCats(false);
     }
-  };
+  }, [token]);
 
-  const reloadFoods = async () => {
-    const res = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/food`);
-    setFoods(res.data || []);
-  };
+  const reloadFoods = useCallback(async () => {
+    try {
+      setLoadingFoods(true);
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/food`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFoods(res.data || []);
+    } finally {
+      setLoadingFoods(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     Promise.all([reloadCategories(), reloadFoods()]);
-  }, []);
+  }, [reloadCategories, reloadFoods]);
 
   const selectedCategory = useMemo(
     () => flatCats.find((c) => c.id === selectedCategoryId) ?? null,
@@ -80,20 +72,40 @@ export const FoodMenu = () => {
     return foods.filter((f) => f.categoryId === selectedCategoryId);
   }, [foods, selectedCategoryId]);
 
+  const foodLoadingGrid = (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {[...Array(8)].map((_, i) => (
+        <Skeleton key={i} className="h-[240px] w-full rounded-xl" />
+      ))}
+    </div>
+  );
+
+  const mainContent = () => {
+    if (loadingFoods) return foodLoadingGrid;
+    if (!selectedCategory) {
+      return (
+        <div className="bg-card border border-border rounded-lg p-8">
+          <p className="text-sm text-muted-foreground">
+            {t("select_category_hint")}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <FoodCategoryList
+        category={{ ...selectedCategory, foodCount: selectedCategory.foodCount ?? 0 }}
+        foodData={foodsInSelectedCategory}
+        refreshFood={reloadFoods}
+      />
+    );
+  };
+
   return (
     <div className="w-full min-h-screen bg-background text-foreground">
       <div className="p-6">
         {/* Desktop: left category tree */}
         <div className="hidden lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
-          <aside
-            className="
-              w-[260px]
-              bg-card
-              border border-border
-              rounded-lg
-              p-4
-            "
-          >
+          <aside className="w-[260px] bg-card border border-border rounded-lg p-4">
             <CategoryTree
               tree={tree}
               loading={loadingCats}
@@ -103,21 +115,7 @@ export const FoodMenu = () => {
             />
           </aside>
 
-          <main className="flex-1">
-            {!selectedCategory ? (
-              <div className="bg-card border border-border rounded-lg p-8">
-                <p className="text-sm text-muted-foreground">
-                  {t("select_category_hint")}
-                </p>
-              </div>
-            ) : (
-              <FoodCategoryList
-                category={selectedCategory as any}
-                foodData={foodsInSelectedCategory}
-                refreshFood={reloadFoods}
-              />
-            )}
-          </main>
+          <main className="flex-1">{mainContent()}</main>
         </div>
 
         {/* Mobile / tablet: category selector + content */}
@@ -129,21 +127,7 @@ export const FoodMenu = () => {
             />
           </div>
 
-          <main>
-            {!selectedCategory ? (
-              <div className="bg-card border border-border rounded-lg p-6">
-                <p className="text-sm text-muted-foreground">
-                  {t("select_category_hint")}
-                </p>
-              </div>
-            ) : (
-              <FoodCategoryList
-                category={selectedCategory as any}
-                foodData={foodsInSelectedCategory}
-                refreshFood={reloadFoods}
-              />
-            )}
-          </main>
+          <main>{mainContent()}</main>
         </div>
       </div>
 

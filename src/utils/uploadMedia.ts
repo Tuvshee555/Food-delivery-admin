@@ -12,12 +12,18 @@ export async function uploadMedia(
   const formData = new FormData();
   files.forEach((f) => formData.append("files", f));
 
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
   try {
     const res = await axios.post(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/media`,
       formData,
       {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         timeout: 30_000,
         onUploadProgress: (progressEvent?: AxiosProgressEvent) => {
           if (!onProgress || !progressEvent?.total || !progressEvent?.loaded)

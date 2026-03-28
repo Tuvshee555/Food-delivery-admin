@@ -29,6 +29,14 @@ export default function LogIn() {
     loadFacebookSDK();
   }, []);
 
+  const requireAdminAccess = (role?: string) => {
+    if (role === "ADMIN") return true;
+    const message = "This account does not have ADMIN access!";
+    setError(message);
+    toast.error(message);
+    return false;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -81,6 +89,7 @@ export default function LogIn() {
 
       const data = await r.json();
       if (data.token && data.user) {
+        if (!requireAdminAccess(data.user.role)) return;
         localStorage.setItem("token", data.token);
         localStorage.setItem("email", data.user.email);
         localStorage.setItem("userId", data.user.id);
@@ -88,7 +97,7 @@ export default function LogIn() {
         toast.success("Successfully logged in with Google!");
         router.push("/home-page");
       } else {
-        toast.error("Google login failed!");
+        toast.error(data.message || "Google login failed!");
       }
     } catch {
       toast.error("Google login failed!");
@@ -115,6 +124,7 @@ export default function LogIn() {
           .then((r) => r.json())
           .then((data) => {
             if (data.token && data.user) {
+              if (!requireAdminAccess(data.user.role)) return;
               localStorage.setItem("token", data.token);
               localStorage.setItem("email", data.user.email);
               localStorage.setItem("userId", data.user.id);
@@ -122,7 +132,7 @@ export default function LogIn() {
               toast.success("Successfully logged in with Facebook!");
               router.push("/home-page");
             } else {
-              toast.error("Facebook login failed");
+              toast.error(data.message || "Facebook login failed");
             }
           })
           .catch(() => toast.error("Facebook login failed"));

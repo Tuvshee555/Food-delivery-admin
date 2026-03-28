@@ -173,7 +173,29 @@
   "payment_status.PAID": "Төлсөн",
   "payment_status.REFUNDED": "Буцаалт хийгдсэн",
   "payment_status.CANCELLED": "Цуцлагдсан",
-  "payment_status.UNKNOWN": "Тодорхойгүй"
+  "payment_status.UNKNOWN": "Тодорхойгүй",
+
+  "search_order_placeholder": "Захиалгын ID хайх (жш: #AGP9T1QK)",
+  "clear": "Арилгах",
+  "found_count": "{count} олдлоо",
+  "total_count": "Нийт {count}",
+  "no_orders_found": "Тохирох захиалга олдсонгүй",
+
+  "updated": "Амжилттай шинэчлэгдлээ",
+  "update_failed": "Шинэчлэхэд алдаа гарлаа",
+  "deleted": "Амжилттай устгагдлаа",
+  "edit_food": "Хоол засах",
+  "update_item_details": "Доорх мэдээллийг шинэчлэнэ үү",
+  "delete_food_title": "Хоолыг устгах уу?",
+  "delete_food_description": "Энэ үйлдлийг буцаах боломжгүй. Хоол бүрмөсөн устгагдана.",
+  "confirm_delete": "Устгах",
+
+  "vs_last_period": "өмнөх үетэй харьцуулахад",
+
+  "sidebar.title": "Админ навигаци",
+  "sidebar.logout": "Гарах",
+  "no_category_foods": "Энэ ангилалд одоогоор хоол алга.",
+  "add_first_food": "Эхний хоолыг нэмэх"
 
 
 

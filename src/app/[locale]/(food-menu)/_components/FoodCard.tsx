@@ -41,7 +41,8 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
         flex flex-col
         gap-4
         w-full
-        h-[240px]
+        min-h-[240px]
+        overflow-hidden
       "
     >
       <div className="relative w-full">
@@ -64,7 +65,7 @@ export const FoodCard: React.FC<FoodCardPropsType> = ({
 
       <div className="w-full space-y-1.5 flex-1 overflow-hidden">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-medium truncate">{food.foodName}</h3>
+          <h3 className="text-sm font-medium line-clamp-2">{food.foodName}</h3>
           <span className="text-sm font-medium shrink-0">{food.price}</span>
         </div>
 

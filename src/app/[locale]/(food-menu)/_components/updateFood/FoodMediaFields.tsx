@@ -1,23 +1,22 @@
-/* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { X } from "lucide-react";
 import { ChangeEvent, MutableRefObject } from "react";
+import { FoodFormState } from "@/type/type";
 
 type Props = {
-  updatedFood: any;
-  setUpdatedFood: (fn: any) => void;
+  updatedFood: FoodFormState;
+  setUpdatedFood: React.Dispatch<React.SetStateAction<FoodFormState>>;
 
   mainPreview: string;
   setMainPreview: (v: string) => void;
 
   extraPreviews: string[];
-  setExtraPreviews: (fn: any) => void;
+  setExtraPreviews: React.Dispatch<React.SetStateAction<string[]>>;
 
   extraFiles: File[];
-  setExtraFiles: (fn: any) => void;
+  setExtraFiles: React.Dispatch<React.SetStateAction<File[]>>;
 
   videoPreview: string;
   setVideoPreview: (v: string) => void;
@@ -48,7 +47,7 @@ export default function FoodMediaFields({
     const url = URL.createObjectURL(file);
     createdUrls.current.push(url);
 
-    setUpdatedFood((p: any) => ({ ...p, image: file }));
+    setUpdatedFood((p) => ({ ...p, image: file }));
     setMainPreview(url);
   };
 
@@ -62,34 +61,32 @@ export default function FoodMediaFields({
       return url;
     });
 
-    setExtraPreviews((p: string[]) => [...p, ...previews]);
-    setExtraFiles((p: File[]) => [...p, ...files]);
-    setUpdatedFood((p: any) => ({
+    setExtraPreviews((p) => [...p, ...previews]);
+    setExtraFiles((p) => [...p, ...files]);
+    setUpdatedFood((p) => ({
       ...p,
       extraImages: [...(p.extraImages || []), ...files],
     }));
   };
 
   const removeExtra = (index: number) => {
-    setExtraPreviews((p: string[]) => p.filter((_, i) => i !== index));
+    setExtraPreviews((p) => p.filter((_, i) => i !== index));
 
     if (index < existingExtraCount.current) {
-      setUpdatedFood((p: any) => ({
+      setUpdatedFood((p) => ({
         ...p,
-        extraImages: p.extraImages.filter((_: any, i: number) => i !== index),
+        extraImages: (p.extraImages || []).filter((_, i) => i !== index),
       }));
       existingExtraCount.current--;
     } else {
       const fileIndex = index - existingExtraCount.current;
       const file = extraFiles[fileIndex];
 
-      setExtraFiles((p: any[]) =>
-        p.filter((_: any, i: number) => i !== fileIndex)
-      );
-      setUpdatedFood((p: any) => ({
+      setExtraFiles((p) => p.filter((_, i) => i !== fileIndex));
+      setUpdatedFood((p) => ({
         ...p,
-        extraImages: p.extraImages.filter(
-          (x: any) =>
+        extraImages: (p.extraImages || []).filter(
+          (x) =>
             !(x instanceof File && x.name === file.name && x.size === file.size)
         ),
       }));
@@ -105,7 +102,7 @@ export default function FoodMediaFields({
 
     setVideoFile(file);
     setVideoPreview(url);
-    setUpdatedFood((p: any) => ({ ...p, video: file }));
+    setUpdatedFood((p) => ({ ...p, video: file }));
   };
 
   return (
@@ -117,6 +114,7 @@ export default function FoodMediaFields({
         {mainPreview && (
           <img
             src={mainPreview}
+            alt="Main preview"
             className="w-full h-40 object-cover rounded-lg mt-2"
           />
         )}
@@ -134,7 +132,7 @@ export default function FoodMediaFields({
         <div className="flex flex-wrap gap-2 mt-2">
           {extraPreviews.map((src, i) => (
             <div key={i} className="relative">
-              <img src={src} className="w-20 h-20 rounded-md object-cover" />
+              <img src={src} alt={`Extra ${i}`} className="w-20 h-20 rounded-md object-cover" />
               <X
                 onClick={() => removeExtra(i)}
                 className="absolute top-1 right-1 w-4 h-4 bg-black/70 text-white rounded-full cursor-pointer"

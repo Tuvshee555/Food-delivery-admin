@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Key } from "react";
+import type { Key } from "react";
 
 // -------------------- FOOD TYPES --------------------
 
@@ -7,8 +6,8 @@ import { Key } from "react";
 export type FoodType = {
   oldPrice: string;
   discount: string;
-  isFeatured: any;
-  salesCount: any;
+  isFeatured: boolean;
+  salesCount: number;
   id: Key | null | undefined;
   foodName: string;
   price: string | number;
@@ -31,6 +30,14 @@ export type FoodType = {
   // Misc frontend-only helper fields
   foodData?: [];
   categories?: string;
+};
+
+// Form state for the UpdateFood dialog (prices kept as strings for input binding)
+export type FoodFormState = Omit<FoodType, "price" | "oldPrice" | "discount" | "sizes"> & {
+  price: string;
+  oldPrice: string;
+  discount: string;
+  sizes: string[];
 };
 
 // Props for FoodCard component
